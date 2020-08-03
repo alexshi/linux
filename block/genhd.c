@@ -38,8 +38,6 @@ static struct kobject *block_depr;
 static DEFINE_SPINLOCK(ext_devt_lock);
 static DEFINE_IDR(ext_devt_idr);
 
-static const struct device_type disk_type;
-
 static void disk_check_events(struct disk_events *ev,
 			      unsigned int *clearing_ptr);
 static void disk_alloc_events(struct gendisk *disk);
@@ -1587,7 +1585,7 @@ static char *block_devnode(struct device *dev, umode_t *mode,
 	return NULL;
 }
 
-static const struct device_type disk_type = {
+const struct device_type disk_type = {
 	.name		= "disk",
 	.groups		= disk_attr_groups,
 	.release	= disk_release,
@@ -1775,7 +1773,7 @@ EXPORT_SYMBOL(__alloc_disk_node);
 
 /**
  * get_disk_and_module - increments the gendisk and gendisk fops module refcount
- * @disk: the struct gendisk to to increment the refcount for
+ * @disk: the struct gendisk to increment the refcount for
  *
  * This increments the refcount for the struct gendisk, and the gendisk's
  * fops module owner.
@@ -1804,7 +1802,7 @@ EXPORT_SYMBOL(get_disk_and_module);
 
 /**
  * put_disk - decrements the gendisk refcount
- * @disk: the struct gendisk to to decrement the refcount for
+ * @disk: the struct gendisk to decrement the refcount for
  *
  * This decrements the refcount for the struct gendisk. When this reaches 0
  * we'll have disk_release() called.
@@ -1821,7 +1819,7 @@ EXPORT_SYMBOL(put_disk);
 
 /**
  * put_disk_and_module - decrements the module and gendisk refcount
- * @disk: the struct gendisk to to decrement the refcount for
+ * @disk: the struct gendisk to decrement the refcount for
  *
  * This is a counterpart of get_disk_and_module() and thus also of
  * get_gendisk().
@@ -2056,18 +2054,12 @@ void disk_flush_events(struct gendisk *disk, unsigned int mask)
  */
 unsigned int disk_clear_events(struct gendisk *disk, unsigned int mask)
 {
-	const struct block_device_operations *bdops = disk->fops;
 	struct disk_events *ev = disk->ev;
 	unsigned int pending;
 	unsigned int clearing = mask;
 
-	if (!ev) {
-		/* for drivers still using the old ->media_changed method */
-		if ((mask & DISK_EVENT_MEDIA_CHANGE) &&
-		    bdops->media_changed && bdops->media_changed(disk))
-			return DISK_EVENT_MEDIA_CHANGE;
+	if (!ev)
 		return 0;
-	}
 
 	disk_block_events(disk);
 

@@ -96,7 +96,6 @@ static bool blk_mq_dispatch_hctx_list(struct list_head *rq_list)
 	struct request *rq;
 	LIST_HEAD(hctx_list);
 	unsigned int count = 0;
-	bool ret;
 
 	list_for_each_entry(rq, rq_list, queuelist) {
 		if (rq->mq_hctx != hctx) {
@@ -108,8 +107,7 @@ static bool blk_mq_dispatch_hctx_list(struct list_head *rq_list)
 	list_splice_tail_init(rq_list, &hctx_list);
 
 dispatch:
-	ret = blk_mq_dispatch_rq_list(hctx, &hctx_list, count);
-	return ret;
+	return blk_mq_dispatch_rq_list(hctx, &hctx_list, count);
 }
 
 #define BLK_MQ_BUDGET_DELAY	3		/* ms units */
@@ -227,7 +225,7 @@ static struct blk_mq_ctx *blk_mq_next_ctx(struct blk_mq_hw_ctx *hctx,
  * restart queue if .get_budget() returns BLK_STS_NO_RESOURCE.
  *
  * Returns -EAGAIN if hctx->dispatch was found non-empty and run_work has to
- * to be run again.  This is necessary to avoid starving flushes.
+ * be run again.  This is necessary to avoid starving flushes.
  */
 static int blk_mq_do_dispatch_ctx(struct blk_mq_hw_ctx *hctx)
 {
