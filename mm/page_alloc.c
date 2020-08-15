@@ -517,18 +517,14 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	unsigned long bitidx, byte_bitidx;
 	unsigned char old_byte, byte;
 
-	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != 4);
+	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != BITS_PER_BYTE);
 	BUILD_BUG_ON(MIGRATE_TYPES > (1 << PB_migratetype_bits));
 
 	bitmap = get_pageblock_bitmap(page, pfn);
 	bitidx = pfn_to_bitidx(page, pfn);
 	byte_bitidx = bitidx / BITS_PER_BYTE;
-	bitidx &= (BITS_PER_BYTE-1);
 
 	VM_BUG_ON_PAGE(!zone_spans_pfn(page_zone(page), pfn), page);
-
-	mask <<= bitidx;
-	flags <<= bitidx;
 
 	byte = READ_ONCE(bitmap[byte_bitidx]);
 	for (;;) {
@@ -539,13 +535,13 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	}
 }
 
-void set_pageblock_migratetype(struct page *page, int migratetype)
+void set_pageblock_migratetype(struct page *page, unsigned char migratetype)
 {
 	if (unlikely(page_group_by_mobility_disabled &&
 		     migratetype < MIGRATE_PCPTYPES))
 		migratetype = MIGRATE_UNMOVABLE;
 
-	set_pfnblock_flags_mask(page, (unsigned long)migratetype,
+	set_pfnblock_flags_mask(page, migratetype,
 				page_to_pfn(page), MIGRATETYPE_MASK);
 }
 
