@@ -445,7 +445,7 @@ static inline bool defer_init(int nid, unsigned long pfn, unsigned long end_pfn)
 #endif
 
 /* Return a pointer to the bitmap storing bits affecting a block of pages */
-static inline unsigned long *get_pageblock_bitmap(struct page *page,
+static inline unsigned char *get_pageblock_bitmap(struct page *page,
 							unsigned long pfn)
 {
 #ifdef CONFIG_SPARSEMEM
@@ -474,24 +474,24 @@ static inline int pfn_to_bitidx(struct page *page, unsigned long pfn)
  * Return: pageblock_bits flags
  */
 static __always_inline
-unsigned long __get_pfnblock_flags_mask(struct page *page,
+unsigned char __get_pfnblock_flags_mask(struct page *page,
 					unsigned long pfn,
 					unsigned long mask)
 {
-	unsigned long *bitmap;
-	unsigned long bitidx, word_bitidx;
-	unsigned long word;
+	unsigned char *bitmap;
+	unsigned long bitidx, byte_bitidx;
+	unsigned char byte;
 
 	bitmap = get_pageblock_bitmap(page, pfn);
 	bitidx = pfn_to_bitidx(page, pfn);
-	word_bitidx = bitidx / BITS_PER_LONG;
-	bitidx &= (BITS_PER_LONG-1);
+	byte_bitidx = bitidx / BITS_PER_BYTE;
+	bitidx &= (BITS_PER_BYTE-1);
 
-	word = bitmap[word_bitidx];
-	return (word >> bitidx) & mask;
+	byte = bitmap[byte_bitidx];
+	return (byte >> bitidx) & mask;
 }
 
-unsigned long get_pfnblock_flags_mask(struct page *page, unsigned long pfn,
+unsigned char get_pfnblock_flags_mask(struct page *page, unsigned long pfn,
 					unsigned long mask)
 {
 	return __get_pfnblock_flags_mask(page, pfn, mask);
@@ -513,29 +513,29 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 					unsigned long pfn,
 					unsigned long mask)
 {
-	unsigned long *bitmap;
-	unsigned long bitidx, word_bitidx;
-	unsigned long old_word, word;
+	unsigned char *bitmap;
+	unsigned long bitidx, byte_bitidx;
+	unsigned char old_byte, byte;
 
 	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != 4);
 	BUILD_BUG_ON(MIGRATE_TYPES > (1 << PB_migratetype_bits));
 
 	bitmap = get_pageblock_bitmap(page, pfn);
 	bitidx = pfn_to_bitidx(page, pfn);
-	word_bitidx = bitidx / BITS_PER_LONG;
-	bitidx &= (BITS_PER_LONG-1);
+	byte_bitidx = bitidx / BITS_PER_BYTE;
+	bitidx &= (BITS_PER_BYTE-1);
 
 	VM_BUG_ON_PAGE(!zone_spans_pfn(page_zone(page), pfn), page);
 
 	mask <<= bitidx;
 	flags <<= bitidx;
 
-	word = READ_ONCE(bitmap[word_bitidx]);
+	byte = READ_ONCE(bitmap[byte_bitidx]);
 	for (;;) {
-		old_word = cmpxchg(&bitmap[word_bitidx], word, (word & ~mask) | flags);
-		if (word == old_word)
+		old_byte = cmpxchg(&bitmap[byte_bitidx], byte, (byte & ~mask) | flags);
+		if (byte == old_byte)
 			break;
-		word = old_word;
+		byte = old_byte;
 	}
 }
 
