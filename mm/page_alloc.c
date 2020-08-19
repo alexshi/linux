@@ -509,6 +509,9 @@ static __always_inline int get_pfnblock_migratetype(struct page *page, unsigned 
  * @pfn: The target page frame number
  * @mask: mask of bits that the caller is interested in
  */
+#define CREATE_TRACE_POINTS
+#include <trace/events/pageblock.h>
+
 void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 					unsigned long pfn,
 					unsigned long mask)
@@ -532,6 +535,7 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 		if (byte == old_byte)
 			break;
 		byte = old_byte;
+		trace_hit_cmpxchg(byte);
 	}
 }
 
