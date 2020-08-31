@@ -406,6 +406,15 @@ enum zone_type {
 
 #ifndef __GENERATING_BOUNDS_H
 
+/* cmpxchg only support 32-bits operands on ARMv6, SPARC32, sh2, XTENSA.*/
+#ifdef CONFIG_NO_CMPXCHG_BYTE
+#define BITS_PER_FLAGS	BITS_PER_LONG
+typedef unsigned long pageblockflags_t;
+#else
+#define BITS_PER_FLAGS	BITS_PER_BYTE
+typedef unsigned char pageblockflags_t;
+#endif
+
 struct zone {
 	/* Read-mostly fields */
 
@@ -437,7 +446,7 @@ struct zone {
 	 * Flags for a pageblock_nr_pages block. See pageblock-flags.h.
 	 * In SPARSEMEM, this map is stored in struct mem_section
 	 */
-	unsigned char		*pageblock_flags;
+	pageblockflags_t	*pageblock_flags;
 #endif /* CONFIG_SPARSEMEM */
 
 	/* zone_start_pfn == zone_start_paddr >> PAGE_SHIFT */
@@ -1159,7 +1168,7 @@ struct mem_section_usage {
 	DECLARE_BITMAP(subsection_map, SUBSECTIONS_PER_SECTION);
 #endif
 	/* See declaration of similar field in struct zone */
-	unsigned char	pageblock_flags[0];
+	pageblockflags_t	pageblock_flags[0];
 };
 
 void subsection_map_init(unsigned long pfn, unsigned long nr_pages);
@@ -1212,7 +1221,7 @@ extern struct mem_section **mem_section;
 extern struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 #endif
 
-static inline unsigned char *section_to_usemap(struct mem_section *ms)
+static inline pageblockflags_t *section_to_usemap(struct mem_section *ms)
 {
 	return ms->usage->pageblock_flags;
 }

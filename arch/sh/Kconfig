@@ -154,6 +154,7 @@ menu "System type"
 #
 config CPU_SH2
 	bool
+	select NO_CMPXCHG_BYTE
 	select SH_INTC
 
 config CPU_SH2A

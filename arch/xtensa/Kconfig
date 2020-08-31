@@ -40,6 +40,7 @@ config XTENSA
 	select HAVE_SYSCALL_TRACEPOINTS
 	select IRQ_DOMAIN
 	select MODULES_USE_ELF_RELA
+	select NO_CMPXCHG_BYTE
 	select PERF_USE_VMALLOC
 	select VIRT_TO_BUS
 	help

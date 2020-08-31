@@ -57,6 +57,7 @@ config SPARC32
 	select GENERIC_ATOMIC64
 	select CLZ_TAB
 	select HAVE_UID16
+	select NO_CMPXCHG_BYTE
 	select OLD_SIGACTION
 
 config SPARC64
