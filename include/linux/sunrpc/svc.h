@@ -248,6 +248,8 @@ struct svc_rqst {
 	size_t			rq_xprt_hlen;	/* xprt header len */
 	struct xdr_buf		rq_arg;
 	struct xdr_buf		rq_res;
+	struct xdr_stream	rq_xdr_stream;
+	struct page		*rq_scratch_page;
 	struct page		*rq_pages[RPCSVC_MAXPAGES + 1];
 	struct page *		*rq_respages;	/* points into rq_pages */
 	struct page *		*rq_next_page; /* next reply page to use */
@@ -555,6 +557,20 @@ int		   svc_rpcbind_set_version(struct net *net,
 static inline void svc_reserve_auth(struct svc_rqst *rqstp, int space)
 {
 	svc_reserve(rqstp, space + rqstp->rq_auth_slack);
+}
+
+/**
+ * svcxdr_init_decode - Prepare an xdr_stream for svc Call decoding
+ * @rqstp: controlling server RPC transaction context
+ * @p: Starting position
+ *
+ */
+static inline void svcxdr_init_decode(struct svc_rqst *rqstp, __be32 *p)
+{
+	struct xdr_stream *xdr = &rqstp->rq_xdr_stream;
+
+	xdr_init_decode(xdr, &rqstp->rq_arg, p, NULL);
+	xdr_set_scratch_page(xdr, rqstp->rq_scratch_page);
 }
 
 #endif /* SUNRPC_SVC_H */
