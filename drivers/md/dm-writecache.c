@@ -319,7 +319,7 @@ err1:
 #else
 static int persistent_memory_claim(struct dm_writecache *wc)
 {
-	BUG();
+	return -EOPNOTSUPP;
 }
 #endif
 
@@ -2284,7 +2284,11 @@ invalid_optional:
 
 		r = persistent_memory_claim(wc);
 		if (r) {
+#ifdef DM_WRITECACHE_HAS_PMEM
 			ti->error = "Unable to map persistent memory for cache";
+#else
+			ti->error = "Unable to map persistent memory for cache due to missing pmem support";
+#endif
 			goto bad;
 		}
 	} else {
