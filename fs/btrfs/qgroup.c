@@ -3435,23 +3435,19 @@ static int qgroup_unreserve_range(struct btrfs_inode *inode,
 {
 	struct rb_node *node;
 	struct rb_node *next;
-	struct ulist_node *entry = NULL;
+	struct ulist_node *entry;
 	int ret = 0;
 
 	node = reserved->range_changed.root.rb_node;
+	if (!node)
+		return 0;
 	while (node) {
 		entry = rb_entry(node, struct ulist_node, rb_node);
 		if (entry->val < start)
 			node = node->rb_right;
-		else if (entry)
-			node = node->rb_left;
 		else
-			break;
+			node = node->rb_left;
 	}
-
-	/* Empty changeset */
-	if (!entry)
-		return 0;
 
 	if (entry->val > start && rb_prev(&entry->rb_node))
 		entry = rb_entry(rb_prev(&entry->rb_node), struct ulist_node,
@@ -3516,6 +3512,7 @@ static int try_flush_qgroup(struct btrfs_root *root)
 {
 	struct btrfs_trans_handle *trans;
 	int ret;
+	bool can_commit = true;
 
 	/*
 	 * We don't want to run flush again and again, so if there is a running
@@ -3526,6 +3523,20 @@ static int try_flush_qgroup(struct btrfs_root *root)
 			!test_bit(BTRFS_ROOT_QGROUP_FLUSHING, &root->state));
 		return 0;
 	}
+
+	/*
+	 * If current process holds a transaction, we shouldn't flush, as we
+	 * assume all space reservation happens before a transaction handle is
+	 * held.
+	 *
+	 * But there are cases like btrfs_delayed_item_reserve_metadata() where
+	 * we try to reserve space with one transction handle already held.
+	 * In that case we can't commit transaction, but at least try to end it
+	 * and hope the started data writes can free some space.
+	 */
+	if (current->journal_info &&
+	    current->journal_info != BTRFS_SEND_TRANS_STUB)
+		can_commit = false;
 
 	ret = btrfs_start_delalloc_snapshot(root);
 	if (ret < 0)
@@ -3538,7 +3549,10 @@ static int try_flush_qgroup(struct btrfs_root *root)
 		goto out;
 	}
 
-	ret = btrfs_commit_transaction(trans);
+	if (can_commit)
+		ret = btrfs_commit_transaction(trans);
+	else
+		ret = btrfs_end_transaction(trans);
 out:
 	clear_bit(BTRFS_ROOT_QGROUP_FLUSHING, &root->state);
 	wake_up(&root->qgroup_flush_wait);
