@@ -52,6 +52,7 @@ static struct cma *secretmem_cma;
 
 static int secretmem_memcg_charge(struct page *page, gfp_t gfp, int order)
 {
+#ifdef CONFIG_MEMCG
 	unsigned long nr_pages = (1 << order);
 	int i, err;
 
@@ -65,11 +66,13 @@ static int secretmem_memcg_charge(struct page *page, gfp_t gfp, int order)
 		p->memcg_data = page->memcg_data;
 	}
 
+#endif
 	return 0;
 }
 
 static void secretmem_memcg_uncharge(struct page *page, int order)
 {
+#ifdef CONFIG_MEMCG
 	unsigned long nr_pages = (1 << order);
 	int i;
 
@@ -80,6 +83,7 @@ static void secretmem_memcg_uncharge(struct page *page, int order)
 	}
 
 	memcg_kmem_uncharge_page(page, PMD_PAGE_ORDER);
+#endif
 }
 
 static int secretmem_pool_increase(struct secretmem_ctx *ctx, gfp_t gfp)
