@@ -99,6 +99,7 @@ extern const char *f2fs_fault_name[FAULT_MAX];
 #define F2FS_MOUNT_DISABLE_CHECKPOINT	0x02000000
 #define F2FS_MOUNT_NORECOVERY		0x04000000
 #define F2FS_MOUNT_ATGC			0x08000000
+#define F2FS_MOUNT_DISABLE_AUTO_COMPR	0x10000000
 
 #define F2FS_OPTION(sbi)	((sbi)->mount_opt)
 #define clear_opt(sbi, option)	(F2FS_OPTION(sbi).opt &= ~F2FS_MOUNT_##option)
@@ -2750,6 +2751,13 @@ static inline int f2fs_compressed_file(struct inode *inode)
 {
 	return S_ISREG(inode->i_mode) &&
 		is_inode_flag_set(inode, FI_COMPRESSED_FILE);
+}
+
+static inline int f2fs_need_compress_write(struct inode *inode)
+{
+	if (test_opt(F2FS_I_SB(inode), DISABLE_AUTO_COMPR))
+		return 0;
+	return f2fs_compressed_file(inode);
 }
 
 static inline unsigned int addrs_per_inode(struct inode *inode)

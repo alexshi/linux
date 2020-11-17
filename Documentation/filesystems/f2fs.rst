@@ -260,6 +260,10 @@ compress_extension=%s	 Support adding specified extension, so that f2fs can enab
 			 For other files, we can still enable compression via ioctl.
 			 Note that, there is one reserved special extension '*', it
 			 can be set to enable compression for all files.
+disable_auto_compr       Even if compression feature is enabled, this option can
+                         disable automaic compression on the compression enabled
+                         file to give discretion of choosing the target file and
+                         the timing of compression to the user.
 inlinecrypt		 When possible, encrypt/decrypt the contents of encrypted
 			 files using the blk-crypto framework rather than
 			 filesystem-layer encryption. This allows the use of
