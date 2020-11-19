@@ -1234,6 +1234,8 @@ enum ib_qp_attr_mask {
 	IB_QP_RESERVED3			= (1<<23),
 	IB_QP_RESERVED4			= (1<<24),
 	IB_QP_RATE_LIMIT		= (1<<25),
+
+	IB_QP_ATTR_STANDARD_BITS = GENMASK(20, 0),
 };
 
 enum ib_qp_state {
@@ -1469,6 +1471,8 @@ enum rdma_remove_reason {
 	RDMA_REMOVE_DRIVER_REMOVE,
 	/* uobj is being cleaned-up before being committed */
 	RDMA_REMOVE_ABORT,
+	/* The driver failed to destroy the uobject and is being disconnected */
+	RDMA_REMOVE_DRIVER_FAILURE,
 };
 
 struct ib_rdmacg_object {
@@ -1480,8 +1484,6 @@ struct ib_rdmacg_object {
 struct ib_ucontext {
 	struct ib_device       *device;
 	struct ib_uverbs_file  *ufile;
-
-	bool cleanup_retryable;
 
 	struct ib_rdmacg_object	cg_obj;
 	/*
@@ -2401,6 +2403,8 @@ struct ib_device_ops {
 	int (*dealloc_pd)(struct ib_pd *pd, struct ib_udata *udata);
 	int (*create_ah)(struct ib_ah *ah, struct rdma_ah_init_attr *attr,
 			 struct ib_udata *udata);
+	int (*create_user_ah)(struct ib_ah *ah, struct rdma_ah_init_attr *attr,
+			      struct ib_udata *udata);
 	int (*modify_ah)(struct ib_ah *ah, struct rdma_ah_attr *ah_attr);
 	int (*query_ah)(struct ib_ah *ah, struct rdma_ah_attr *ah_attr);
 	int (*destroy_ah)(struct ib_ah *ah, u32 flags);
@@ -2665,7 +2669,6 @@ struct ib_device {
 	const struct attribute_group	*groups[3];
 
 	u64			     uverbs_cmd_mask;
-	u64			     uverbs_ex_cmd_mask;
 
 	char			     node_desc[IB_DEVICE_NODE_DESC_MAX];
 	__be64			     node_guid;
@@ -2898,46 +2901,6 @@ static inline bool ib_is_udata_cleared(struct ib_udata *udata,
 				       size_t len)
 {
 	return ib_is_buffer_cleared(udata->inbuf + offset, len);
-}
-
-/**
- * ib_is_destroy_retryable - Check whether the uobject destruction
- * is retryable.
- * @ret: The initial destruction return code
- * @why: remove reason
- * @uobj: The uobject that is destroyed
- *
- * This function is a helper function that IB layer and low-level drivers
- * can use to consider whether the destruction of the given uobject is
- * retry-able.
- * It checks the original return code, if it wasn't success the destruction
- * is retryable according to the ucontext state (i.e. cleanup_retryable) and
- * the remove reason. (i.e. why).
- * Must be called with the object locked for destroy.
- */
-static inline bool ib_is_destroy_retryable(int ret, enum rdma_remove_reason why,
-					   struct ib_uobject *uobj)
-{
-	return ret && (why == RDMA_REMOVE_DESTROY ||
-		       uobj->context->cleanup_retryable);
-}
-
-/**
- * ib_destroy_usecnt - Called during destruction to check the usecnt
- * @usecnt: The usecnt atomic
- * @why: remove reason
- * @uobj: The uobject that is destroyed
- *
- * Non-zero usecnts will block destruction unless destruction was triggered by
- * a ucontext cleanup.
- */
-static inline int ib_destroy_usecnt(atomic_t *usecnt,
-				    enum rdma_remove_reason why,
-				    struct ib_uobject *uobj)
-{
-	if (atomic_read(usecnt) && ib_is_destroy_retryable(-EBUSY, why, uobj))
-		return -EBUSY;
-	return 0;
 }
 
 /**
@@ -4098,35 +4061,6 @@ static inline void ib_dma_sync_single_for_device(struct ib_device *dev,
 	dma_sync_single_for_device(dev->dma_device, addr, size, dir);
 }
 
-/**
- * ib_dma_alloc_coherent - Allocate memory and map it for DMA
- * @dev: The device for which the DMA address is requested
- * @size: The size of the region to allocate in bytes
- * @dma_handle: A pointer for returning the DMA address of the region
- * @flag: memory allocator flags
- */
-static inline void *ib_dma_alloc_coherent(struct ib_device *dev,
-					   size_t size,
-					   dma_addr_t *dma_handle,
-					   gfp_t flag)
-{
-	return dma_alloc_coherent(dev->dma_device, size, dma_handle, flag);
-}
-
-/**
- * ib_dma_free_coherent - Free memory allocated by ib_dma_alloc_coherent()
- * @dev: The device for which the DMA addresses were allocated
- * @size: The size of the region
- * @cpu_addr: the address returned by ib_dma_alloc_coherent()
- * @dma_handle: the DMA address returned by ib_dma_alloc_coherent()
- */
-static inline void ib_dma_free_coherent(struct ib_device *dev,
-					size_t size, void *cpu_addr,
-					dma_addr_t dma_handle)
-{
-	dma_free_coherent(dev->dma_device, size, cpu_addr, dma_handle);
-}
-
 /* ib_reg_user_mr - register a memory region for virtual addresses from kernel
  * space. This function should be called when 'current' is the owning MM.
  */
@@ -4613,6 +4547,19 @@ static inline struct ib_device *rdma_device_to_ibdev(struct device *device)
 		container_of(device, struct ib_core_device, dev);
 
 	return coredev->owner;
+}
+
+/**
+ * ibdev_to_node - return the NUMA node for a given ib_device
+ * @dev:	device to get the NUMA node for.
+ */
+static inline int ibdev_to_node(struct ib_device *ibdev)
+{
+	struct device *parent = ibdev->dev.parent;
+
+	if (!parent)
+		return NUMA_NO_NODE;
+	return dev_to_node(parent);
 }
 
 /**
