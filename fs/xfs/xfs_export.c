@@ -3,6 +3,8 @@
  * Copyright (c) 2004-2005 Silicon Graphics, Inc.
  * All Rights Reserved.
  */
+#include <linux/iversion.h>
+
 #include "xfs.h"
 #include "xfs_shared.h"
 #include "xfs_format.h"
@@ -234,4 +236,5 @@ const struct export_operations xfs_export_operations = {
 	.map_blocks		= xfs_fs_map_blocks,
 	.commit_blocks		= xfs_fs_commit_blocks,
 #endif
+	.fetch_iversion		= generic_fetch_iversion,
 };

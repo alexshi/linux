@@ -761,10 +761,12 @@ void warn_on_nonidempotent_op(struct nfsd4_op *op);
 static inline void
 set_change_info(struct nfsd4_change_info *cinfo, struct svc_fh *fhp)
 {
+	struct inode *inode = d_inode(fhp->fh_dentry);
+
 	BUG_ON(!fhp->fh_pre_saved);
 	cinfo->atomic = (u32)fhp->fh_post_saved;
 
-	if (IS_I_VERSION(d_inode(fhp->fh_dentry))) {
+	if (inode->i_sb->s_export_op->fetch_iversion) {
 		cinfo->before_change = fhp->fh_pre_change;
 		cinfo->after_change = fhp->fh_post_change;
 	} else {

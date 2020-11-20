@@ -328,6 +328,8 @@ inode_query_iversion(struct inode *inode)
 	return cur >> I_VERSION_QUERIED_SHIFT;
 }
 
+extern u64 generic_fetch_iversion(struct inode *inode);
+
 /*
  * For filesystems without any sort of change attribute, the best we can
  * do is fake one up from the ctime:
