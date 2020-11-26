@@ -49,6 +49,7 @@ Hardware Monitoring Kernel Drivers
    bt1-pvt
    coretemp
    corsair-cpro
+   corsair-psu
    da9052
    da9055
    dell-smm-hwmon
@@ -110,6 +111,7 @@ Hardware Monitoring Kernel Drivers
    ltc4245
    ltc4260
    ltc4261
+   max127
    max16064
    max16065
    max1619
