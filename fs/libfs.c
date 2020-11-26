@@ -22,6 +22,7 @@
 #include <linux/fsnotify.h>
 #include <linux/unicode.h>
 #include <linux/fscrypt.h>
+#include <linux/iversion.h>
 
 #include <linux/uaccess.h>
 
@@ -1367,6 +1368,35 @@ bool is_empty_dir_inode(struct inode *inode)
 	return (inode->i_fop == &empty_dir_operations) &&
 		(inode->i_op == &empty_dir_inode_operations);
 }
+
+/*
+ * We could use i_version alone as the NFSv4 change attribute.  However,
+ * i_version can go backwards after a reboot.  On its own that doesn't
+ * necessarily cause a problem, but if i_version goes backwards and then
+ * is incremented again it could reuse a value that was previously used
+ * before boot, and a client who queried the two values might
+ * incorrectly assume nothing changed.
+ *
+ * By using both ctime and the i_version counter we guarantee that as
+ * long as time doesn't go backwards we never reuse an old value.
+ *
+ * A filesystem that has an on-disk boot counter or similar might prefer
+ * to use that to avoid the risk of the change attribute going backwards
+ * if system time is set backwards.
+ */
+u64 generic_fetch_iversion(struct inode *inode)
+{
+	u64 chattr;
+
+	WARN_ON_ONCE(!IS_I_VERSION(inode));
+
+	chattr =  inode->i_ctime.tv_sec;
+	chattr <<= 30;
+	chattr += inode->i_ctime.tv_nsec;
+	chattr += inode_query_iversion(inode);
+	return chattr;
+}
+EXPORT_SYMBOL(generic_fetch_iversion);
 
 #ifdef CONFIG_UNICODE
 /*

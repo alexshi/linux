@@ -2,6 +2,7 @@
 
 #include <linux/fs.h>
 #include <linux/types.h>
+#include <linux/iversion.h>
 #include "ctree.h"
 #include "disk-io.h"
 #include "btrfs_inode.h"
@@ -278,4 +279,5 @@ const struct export_operations btrfs_export_ops = {
 	.fh_to_parent	= btrfs_fh_to_parent,
 	.get_parent	= btrfs_get_parent,
 	.get_name	= btrfs_get_name,
+	.fetch_iversion	= generic_fetch_iversion,
 };
