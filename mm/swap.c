@@ -12,6 +12,7 @@
  * Started 18.12.91
  * Swap aging added 23.2.95, Stephen Tweedie.
  * Buffermem limits added 12.3.98, Rik van Riel.
+ * Pre-sort pagevec added 12.1.20, Alex Shi.
  */
 
 #include <linux/mm.h>
@@ -227,8 +228,8 @@ static void shell_sort(struct pagevec *pvec, unsigned long *lvaddr)
 }
 
 /* Get lru bit cleared page and their lruvec address, release the others */
-void sort_isopv(struct pagevec *pvec, struct pagevec *isopv,
-		unsigned long *lvaddr)
+static void sort_isopv(struct pagevec *pvec, struct pagevec *isopv,
+		unsigned long *lvaddr, bool clearlru)
 {
 	int i, j;
 	struct pagevec busypv;
@@ -242,7 +243,7 @@ void sort_isopv(struct pagevec *pvec, struct pagevec *isopv,
 		pvec->pages[i] = NULL;
 
 		/* block memcg migration during page moving between lru */
-		if (!TestClearPageLRU(page)) {
+		if (clearlru && !TestClearPageLRU(page)) {
 			pagevec_add(&busypv, page);
 			continue;
 		}
@@ -266,9 +267,13 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	unsigned long flags = 0;
 	unsigned long lvaddr[PAGEVEC_SIZE];
 	struct pagevec sortedpv;
+	bool clearlru;
+
+	/* don't clear lru bit for new page adding to lru */
+	clearlru = pvec != this_cpu_ptr(&lru_pvecs.lru_add);
 
 	pagevec_init(&sortedpv);
-	sort_isopv(pvec, &sortedpv, lvaddr);
+	sort_isopv(pvec, &sortedpv, lvaddr, clearlru);
 
 	n = pagevec_count(&sortedpv);
 	if (!n)
@@ -287,7 +292,8 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 
 		(*move_fn)(sortedpv.pages[i], lruvec);
 
-		SetPageLRU(sortedpv.pages[i]);
+		if (clearlru)
+			SetPageLRU(sortedpv.pages[i]);
 	}
 	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
 	release_pages(sortedpv.pages, sortedpv.nr);
@@ -1111,20 +1117,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec)
  */
 void __pagevec_lru_add(struct pagevec *pvec)
 {
-	int i;
-	struct lruvec *lruvec = NULL;
-	unsigned long flags = 0;
-
-	for (i = 0; i < pagevec_count(pvec); i++) {
-		struct page *page = pvec->pages[i];
-
-		lruvec = relock_page_lruvec_irqsave(page, lruvec, &flags);
-		__pagevec_lru_add_fn(page, lruvec);
-	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-	release_pages(pvec->pages, pvec->nr);
-	pagevec_reinit(pvec);
+	pagevec_lru_move_fn(pvec, __pagevec_lru_add_fn);
 }
 
 /**
