@@ -201,29 +201,95 @@ int get_kernel_page(unsigned long start, int write, struct page **pages)
 }
 EXPORT_SYMBOL_GPL(get_kernel_page);
 
+/* Pratt's gaps for shell sort, https://en.wikipedia.org/wiki/Shellsort */
+static int gaps[] = { 6, 4, 3, 2, 1, 0};
+
+/* Shell sort pagevec[] on page's lruvec.*/
+static void shell_sort(struct pagevec *pvec, unsigned long *lvaddr)
+{
+	int g, i, j, n = pagevec_count(pvec);
+
+	for (g=0; gaps[g] > 0 && gaps[g] <= n/2; g++) {
+		int gap = gaps[g];
+
+		for (i = gap; i < n; i++) {
+			unsigned long tmp = lvaddr[i];
+			struct page *page = pvec->pages[i];
+
+			for (j = i - gap; j >= 0 && lvaddr[j] > tmp; j -= gap) {
+				lvaddr[j + gap] = lvaddr[j];
+				pvec->pages[j + gap] = pvec->pages[j];
+			}
+			lvaddr[j + gap] = tmp;
+			pvec->pages[j + gap] = page;
+		}
+	}
+}
+
+/* Get lru bit cleared page and their lruvec address, release the others */
+void sort_isopv(struct pagevec *pvec, struct pagevec *isopv,
+		unsigned long *lvaddr)
+{
+	int i, j;
+	struct pagevec busypv;
+
+	pagevec_init(&busypv);
+
+	for (i = 0, j = 0; i < pagevec_count(pvec); i++) {
+		struct page *page = pvec->pages[i];
+
+		pvec->pages[i] = NULL;
+
+		/* block memcg migration during page moving between lru */
+		if (!TestClearPageLRU(page)) {
+			pagevec_add(&busypv, page);
+			continue;
+		}
+		lvaddr[j++] = (unsigned long)
+				mem_cgroup_page_lruvec(page, page_pgdat(page));
+		pagevec_add(isopv, page);
+	}
+	pagevec_reinit(pvec);
+	if (pagevec_count(&busypv))
+		release_pages(busypv.pages, busypv.nr);
+
+	shell_sort(isopv, lvaddr);
+}
+
 static void pagevec_lru_move_fn(struct pagevec *pvec,
 	void (*move_fn)(struct page *page, struct lruvec *lruvec))
 {
-	int i;
+	int i, n;
 	struct lruvec *lruvec = NULL;
 	unsigned long flags = 0;
+	unsigned long lvaddr[PAGEVEC_SIZE];
+	struct pagevec isopv;
 
-	for (i = 0; i < pagevec_count(pvec); i++) {
-		struct page *page = pvec->pages[i];
+	pagevec_init(&isopv);
 
-		/* block memcg migration during page moving between lru */
-		if (!TestClearPageLRU(page))
-			continue;
+	sort_isopv(pvec, &isopv, lvaddr);
 
-		lruvec = relock_page_lruvec_irqsave(page, lruvec, &flags);
-		(*move_fn)(page, lruvec);
+	n = pagevec_count(&isopv);
+	if (!n)
+		return;
 
-		SetPageLRU(page);
+	lruvec = (struct lruvec *)lvaddr[0];
+	spin_lock_irqsave(&lruvec->lru_lock, flags);
+
+	for (i = 0; i < n; i++) {
+		/* lock new lruvec if lruvec changes, we have sorted them */
+		if (lruvec != (struct lruvec *)lvaddr[i]) {
+			spin_unlock_irqrestore(&lruvec->lru_lock, flags);
+			lruvec = (struct lruvec *)lvaddr[i];
+			spin_lock_irqsave(&lruvec->lru_lock, flags);
+		}
+
+		(*move_fn)(isopv.pages[i], lruvec);
+
+		SetPageLRU(isopv.pages[i]);
 	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-	release_pages(pvec->pages, pvec->nr);
-	pagevec_reinit(pvec);
+	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
+	release_pages(isopv.pages, isopv.nr);
 }
 
 static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec)
