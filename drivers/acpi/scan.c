@@ -51,8 +51,8 @@ static u64 spcr_uart_addr;
 
 struct acpi_dep_data {
 	struct list_head node;
-	acpi_handle master;
-	acpi_handle slave;
+	acpi_handle supplier;
+	acpi_handle consumer;
 };
 
 void acpi_scan_lock_acquire(void)
@@ -751,7 +751,6 @@ static bool acpi_info_matches_ids(struct acpi_device_info *info,
 
 /* List of HIDs for which we ignore matching ACPI devices, when checking _DEP lists. */
 static const char * const acpi_ignore_dep_ids[] = {
-	"INT3396", /* Windows System Power Management Controller */
 	"PNP0D80", /* Windows-compatible System Power Management Controller */
 	NULL
 };
@@ -1882,8 +1881,8 @@ static void acpi_device_dep_initialize(struct acpi_device *adev)
 		if (!dep)
 			return;
 
-		dep->master = dep_devices.handles[i];
-		dep->slave  = adev->handle;
+		dep->supplier = dep_devices.handles[i];
+		dep->consumer  = adev->handle;
 		adev->dep_unmet++;
 
 		mutex_lock(&acpi_dep_list_lock);
@@ -2059,8 +2058,8 @@ void acpi_walk_dep_device_list(acpi_handle handle)
 
 	mutex_lock(&acpi_dep_list_lock);
 	list_for_each_entry_safe(dep, tmp, &acpi_dep_list, node) {
-		if (dep->master == handle) {
-			acpi_bus_get_device(dep->slave, &adev);
+		if (dep->supplier == handle) {
+			acpi_bus_get_device(dep->consumer, &adev);
 			if (!adev)
 				continue;
 
