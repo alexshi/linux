@@ -109,11 +109,14 @@ static __u32 get_neg_ctxt_len(struct smb2_sync_hdr *hdr, __u32 len,
 
 	/* Make sure that negotiate contexts start after gss security blob */
 	nc_offset = le32_to_cpu(pneg_rsp->NegotiateContextOffset);
-	if (nc_offset < non_ctxlen) {
-		pr_warn_once("Invalid negotiate context offset\n");
+	if (nc_offset + 1 < non_ctxlen) {
+		pr_warn_once("Invalid negotiate context offset %d\n", nc_offset);
 		return 0;
-	}
-	size_of_pad_before_neg_ctxts = nc_offset - non_ctxlen;
+	} else if (nc_offset + 1 == non_ctxlen) {
+		cifs_dbg(FYI, "no SPNEGO security blob in negprot rsp\n");
+		size_of_pad_before_neg_ctxts = 0;
+	} else
+		size_of_pad_before_neg_ctxts = nc_offset - non_ctxlen;
 
 	/* Verify that at least minimal negotiate contexts fit within frame */
 	if (len < nc_offset + (neg_count * sizeof(struct smb2_neg_context))) {
