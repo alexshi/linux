@@ -107,7 +107,11 @@ static __u32 get_neg_ctxt_len(struct smb2_sync_hdr *hdr, __u32 len,
 	   (pneg_rsp->DialectRevision != cpu_to_le16(SMB311_PROT_ID)))
 		return 0;
 
-	/* Make sure that negotiate contexts start after gss security blob */
+	/*
+	 * if SPNEGO blob present (ie the RFC2478 GSS info which indicates
+	 * wnich security mechanisms the server supports) make sure that
+	 * the negotiate contexts start after it
+	 */
 	nc_offset = le32_to_cpu(pneg_rsp->NegotiateContextOffset);
 	if (nc_offset + 1 < non_ctxlen) {
 		pr_warn_once("Invalid negotiate context offset %d\n", nc_offset);
