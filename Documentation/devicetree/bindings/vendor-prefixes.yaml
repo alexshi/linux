@@ -85,6 +85,8 @@ patternProperties:
     description: Shenzhen Amediatech Technology Co., Ltd
   "^amlogic,.*":
     description: Amlogic, Inc.
+  "^ampere,.*":
+    description: Ampere Computing LLC
   "^ampire,.*":
     description: Ampire Co., Ltd.
   "^ams,.*":
@@ -1127,7 +1129,7 @@ patternProperties:
   "^tpo,.*":
     description: TPO
   "^tq,.*":
-    description: TQ Systems GmbH
+    description: TQ-Systems GmbH
   "^tronfy,.*":
     description: Tronfy
   "^tronsmart,.*":
