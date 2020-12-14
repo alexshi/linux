@@ -845,6 +845,55 @@ void lru_add_drain_all(void)
 }
 #endif /* CONFIG_SMP */
 
+static void __release_page(struct page *page, struct list_head *pages_to_free)
+{
+	if (PageCompound(page)) {
+		__put_compound_page(page);
+	} else {
+		/* Clear Active bit in case of parallel mark_page_accessed */
+		__ClearPageActive(page);
+		__ClearPageWaiters(page);
+
+		list_add(&page->lru, pages_to_free);
+	}
+}
+
+static void __release_lru_pages(struct pagevec *pvec,
+				struct list_head *pages_to_free)
+{
+	struct lruvec *lruvec = NULL;
+	unsigned long flags = 0;
+	int i;
+
+	/*
+	 * The pagevec at this point should contain a set of pages with
+	 * their reference count at 0 and the LRU flag set. We will now
+	 * need to pull the pages from their LRU lists.
+	 *
+	 * We walk the list backwards here since that way we are starting at
+	 * the pages that should be warmest in the cache.
+	 */
+	for (i = pagevec_count(pvec); i--;) {
+		struct page *page = pvec->pages[i];
+
+		lruvec = relock_page_lruvec_irqsave(page, lruvec, &flags);
+		VM_BUG_ON_PAGE(!PageLRU(page), page);
+		__ClearPageLRU(page);
+		del_page_from_lru_list(page, lruvec, page_off_lru(page));
+	}
+
+	if (lruvec)
+		unlock_page_lruvec_irqrestore(lruvec, flags);
+
+	/*
+	 * A batch of pages are no longer on the LRU list. Go through and
+	 * start the final process of returning the deferred pages to their
+	 * appropriate freelists.
+	 */
+	for (i = pagevec_count(pvec); i--;)
+		__release_page(pvec->pages[i], pages_to_free);
+}
+
 /**
  * release_pages - batched put_page()
  * @pages: array of pages to release
@@ -857,32 +906,25 @@ void release_pages(struct page **pages, int nr)
 {
 	int i;
 	LIST_HEAD(pages_to_free);
-	struct lruvec *lruvec = NULL;
-	unsigned long flags;
-	unsigned int lock_batch;
+	struct pagevec pvec;
+
+	pagevec_init(&pvec);
+
+	/*
+	 * We need to first walk through the list cleaning up the low hanging
+	 * fruit and clearing those pages that either cannot be freed or that
+	 * are non-LRU. We will store the LRU pages in a pagevec so that we
+	 * can get to them in the next pass.
+	 */
 
 	for (i = 0; i < nr; i++) {
 		struct page *page = pages[i];
-
-		/*
-		 * Make sure the IRQ-safe lock-holding time does not get
-		 * excessive with a continuous string of pages from the
-		 * same lruvec. The lock is held only if lruvec != NULL.
-		 */
-		if (lruvec && ++lock_batch == SWAP_CLUSTER_MAX) {
-			unlock_page_lruvec_irqrestore(lruvec, flags);
-			lruvec = NULL;
-		}
 
 		page = compound_head(page);
 		if (is_huge_zero_page(page))
 			continue;
 
 		if (is_zone_device_page(page)) {
-			if (lruvec) {
-				unlock_page_lruvec_irqrestore(lruvec, flags);
-				lruvec = NULL;
-			}
 			/*
 			 * ZONE_DEVICE pages that return 'false' from
 			 * page_is_devmap_managed() do not require special
@@ -901,34 +943,21 @@ void release_pages(struct page **pages, int nr)
 		if (!put_page_testzero(page))
 			continue;
 
-		if (PageCompound(page)) {
-			if (lruvec) {
-				unlock_page_lruvec_irqrestore(lruvec, flags);
-				lruvec = NULL;
-			}
-			__put_compound_page(page);
+		if (!PageLRU(page)) {
+			__release_page(page, &pages_to_free);
 			continue;
 		}
 
-		if (PageLRU(page)) {
-			struct lruvec *prev_lruvec = lruvec;
-
-			lruvec = relock_page_lruvec_irqsave(page, lruvec,
-									&flags);
-			if (prev_lruvec != lruvec)
-				lock_batch = 0;
-
-			VM_BUG_ON_PAGE(!PageLRU(page), page);
-			__ClearPageLRU(page);
-			del_page_from_lru_list(page, lruvec, page_off_lru(page));
+		/* record page so we can get it in the next pass */
+		if (!pagevec_add(&pvec, page)) {
+			__release_lru_pages(&pvec, &pages_to_free);
+			pagevec_reinit(&pvec);
 		}
-
-		__ClearPageWaiters(page);
-
-		list_add(&page->lru, &pages_to_free);
 	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
+
+	/* flush any remaining LRU pages that need to be processed */
+	if (pagevec_count(&pvec))
+		__release_lru_pages(&pvec, &pages_to_free);
 
 	mem_cgroup_uncharge_list(&pages_to_free);
 	free_unref_page_list(&pages_to_free);
