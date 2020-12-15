@@ -232,6 +232,7 @@ static void sort_isopv(struct pagevec *pvec, struct pagevec *isopv,
 		unsigned long *lvaddr, bool clearlru)
 {
 	int i, j;
+	int same = 1;
 	struct pagevec busypv;
 
 	pagevec_init(&busypv);
@@ -247,15 +248,18 @@ static void sort_isopv(struct pagevec *pvec, struct pagevec *isopv,
 			pagevec_add(&busypv, page);
 			continue;
 		}
-		lvaddr[j++] = (unsigned long)
+		lvaddr[j] = (unsigned long)
 				mem_cgroup_page_lruvec(page, page_pgdat(page));
 		pagevec_add(isopv, page);
+		/* !same if lruvec changes, but still filter lru bit */
+		same *= lvaddr[0] == lvaddr[j];
+		j++;
 	}
 	pagevec_reinit(pvec);
 	if (pagevec_count(&busypv))
 		release_pages(busypv.pages, busypv.nr);
 
-	if (!mem_cgroup_disabled() || num_online_nodes() > 1)
+	if (!same && (!mem_cgroup_disabled() || num_online_nodes() > 1))
 		shell_sort(isopv, lvaddr);
 }
 
