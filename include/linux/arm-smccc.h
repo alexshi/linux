@@ -89,6 +89,11 @@
 
 #define SMCCC_ARCH_WORKAROUND_RET_UNAFFECTED	1
 
+#define ARM_SMCCC_KVM_FUNC_PV_LOCK      1
+
+#define KVM_PV_LOCK_FEATURES            0
+#define KVM_PV_LOCK_PREEMPTED           1
+
 /* Paravirtualised time calls (defined by ARM DEN0057A) */
 #define ARM_SMCCC_HV_PV_TIME_FEATURES				\
 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL,			\
@@ -100,6 +105,19 @@
 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL,			\
 			   ARM_SMCCC_SMC_64,			\
 			   ARM_SMCCC_OWNER_STANDARD_HYP,	\
+			   0x21)
+
+/* Paravirtualised lock calls */
+#define ARM_SMCCC_HV_PV_LOCK_FEATURES				\
+	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL,			\
+			   ARM_SMCCC_SMC_64,			\
+			   ARM_SMCCC_OWNER_VENDOR_HYP,		\
+			   0x20)
+
+#define ARM_SMCCC_HV_PV_LOCK_PREEMPTED				\
+	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL,			\
+			   ARM_SMCCC_SMC_64,			\
+			   ARM_SMCCC_OWNER_VENDOR_HYP,		\
 			   0x21)
 
 /*
