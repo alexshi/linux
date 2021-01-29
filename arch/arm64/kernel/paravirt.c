@@ -23,6 +23,7 @@
 #include <asm/pvclock-abi.h>
 #include <asm/smp_plat.h>
 #include <asm/pvlock-abi.h>
+#include <asm/qspinlock.h>
 
 struct static_key paravirt_steal_enabled;
 struct static_key paravirt_steal_rq_enabled;
@@ -247,6 +248,9 @@ int __init pv_lock_init(void)
 		return ret;
 
 	pv_ops.lock.vcpu_is_preempted = kvm_vcpu_is_preempted;
+//	pv_ops.lock.queued_spin_lock_slowpath = native_queued_spin_lock_slowpath;
+//	pv_ops.lock.queued_spin_unlock = native_queued_spin_unlock;
+
 	pr_info("using PV-lock preempted\n");
 
 	return 0;
