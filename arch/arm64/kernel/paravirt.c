@@ -36,10 +36,6 @@ struct pv_time_stolen_time_region {
 	struct pvclock_vcpu_stolen_time *kaddr;
 };
 
-struct pv_lock_state_region {
-	struct pvlock_vcpu_state *kaddr;
-};
-
 static DEFINE_PER_CPU(struct pv_time_stolen_time_region, stolen_time_region);
 
 static bool steal_acc = true;
@@ -168,60 +164,36 @@ int __init pv_time_init(void)
 	return 0;
 }
 
-static DEFINE_PER_CPU(struct pv_lock_state_region, lock_state_region);
+static DEFINE_PER_CPU(struct pv_vcpu_preempted, pv_preempted);
 
 static bool kvm_vcpu_is_preempted(int cpu)
 {
-	struct pv_lock_state_region *reg;
-	__le64 preempted_le;
+	struct pv_vcpu_preempted *pp = per_cpu_ptr(&pv_preempted, cpu);
 
-	reg = per_cpu_ptr(&lock_state_region, cpu);
-	if (!reg->kaddr) {
-		pr_warn_once("PV lock enabled but not configured for cpu %d\n",
-			     cpu);
-		return false;
-	}
-
-	preempted_le = le64_to_cpu(READ_ONCE(reg->kaddr->preempted));
-
-	return !!(preempted_le & 1);
+	return !!READ_ONCE(pp->preempted);
 }
 
-static int pvlock_vcpu_state_dying_cpu(unsigned int cpu)
+static int pv_vcpu_state_dying_cpu(unsigned int cpu)
 {
-	struct pv_lock_state_region *reg;
+	struct pv_vcpu_preempted *pp = per_cpu_ptr(&pv_preempted, cpu);
 
-	reg = this_cpu_ptr(&lock_state_region);
-	if (!reg->kaddr)
-		return 0;
-
-	memunmap(reg->kaddr);
-	memset(reg, 0, sizeof(*reg));
+	memset(pp, 0, sizeof(*pp));
 
 	return 0;
 }
 
-static int init_pvlock_vcpu_state(unsigned int cpu)
+static int init_pv_vcpu_state(unsigned int cpu)
 {
-	struct pv_lock_state_region *reg;
+	struct pv_vcpu_preempted *pp;
 	struct arm_smccc_res res;
 
-	reg = this_cpu_ptr(&lock_state_region);
+	pp = this_cpu_ptr(&pv_preempted);
 
-	arm_smccc_1_1_invoke(ARM_SMCCC_HV_PV_LOCK_PREEMPTED, &res);
+	arm_smccc_1_1_invoke(ARM_SMCCC_HV_PV_LOCK_PREEMPTED, pp, &res);
 
 	if (res.a0 == SMCCC_RET_NOT_SUPPORTED) {
 		pr_warn("Failed to init PV lock data structure\n");
 		return -EINVAL;
-	}
-
-	reg->kaddr = memremap(res.a0,
-			      sizeof(struct pvlock_vcpu_state),
-			      MEMREMAP_WB);
-
-	if (!reg->kaddr) {
-		pr_warn("Failed to map PV lock data structure\n");
-		return -ENOMEM;
 	}
 
 	return 0;
@@ -233,8 +205,8 @@ static int kvm_arm_init_pvlock(void)
 
 	ret = cpuhp_setup_state(CPUHP_AP_ARM_KVM_PVLOCK_STARTING,
 				"hypervisor/arm/pvlock:starting",
-				init_pvlock_vcpu_state,
-				pvlock_vcpu_state_dying_cpu);
+				init_pv_vcpu_state,
+				pv_vcpu_state_dying_cpu);
 	if (ret < 0) {
 		pr_warn("PV-lock init failed\n");
 		return ret;
@@ -257,10 +229,7 @@ static bool has_kvm_pvlock(void)
 	if (res.a0 != SMCCC_RET_SUCCESS)
 		return false;
 
-	arm_smccc_1_1_invoke(ARM_SMCCC_HV_PV_LOCK_FEATURES,
-			     ARM_SMCCC_HV_PV_LOCK_PREEMPTED, &res);
-
-	return (res.a0 == SMCCC_RET_SUCCESS);
+	return true;
 }
 
 int __init pv_lock_init(void)
