@@ -1973,9 +1973,6 @@ struct mem_cgroup *mem_cgroup_get_oom_group(struct task_struct *victim,
 	struct mem_cgroup *oom_group = NULL;
 	struct mem_cgroup *memcg;
 
-	if (!cgroup_subsys_on_dfl(memory_cgrp_subsys))
-		return NULL;
-
 	if (!oom_domain)
 		oom_domain = root_mem_cgroup;
 
@@ -4457,6 +4454,9 @@ static int mem_cgroup_oom_control_write(struct cgroup_subsys_state *css,
 	return 0;
 }
 
+static int memory_oom_group_show(struct seq_file *m, void *v);
+static ssize_t memory_oom_group_write(struct kernfs_open_file *of,
+				      char *buf, size_t nbytes, loff_t off);
 #ifdef CONFIG_CGROUP_WRITEBACK
 
 #include <trace/events/writeback.h>
@@ -4969,6 +4969,12 @@ static struct cftype mem_cgroup_legacy_files[] = {
 		.name = "oom_control",
 		.seq_show = mem_cgroup_oom_control_read,
 		.write_u64 = mem_cgroup_oom_control_write,
+	},
+	{
+		.name = "oom.group",
+		.flags = CFTYPE_NOT_ON_ROOT | CFTYPE_NS_DELEGATABLE,
+		.seq_show = memory_oom_group_show,
+		.write = memory_oom_group_write,
 	},
 	{
 		.name = "pressure_level",
