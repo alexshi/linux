@@ -274,8 +274,7 @@ static void init_cfi_state(struct cfi_state *cfi)
 	cfi->drap_offset = -1;
 }
 
-static void init_insn_state(struct objtool_file *file, struct insn_state *state,
-			    struct section *sec)
+static void init_insn_state(struct insn_state *state, struct section *sec)
 {
 	memset(state, 0, sizeof(*state));
 	init_cfi_state(&state->cfi);
@@ -2681,7 +2680,7 @@ static bool is_special_call(struct instruction *insn)
 	return false;
 }
 
-static bool has_modified_stack_frame(struct instruction *insn, struct insn_state *state)
+static bool has_modified_stack_frame(struct insn_state *state)
 {
 	struct cfi_state *cfi = &state->cfi;
 	int i;
@@ -3474,7 +3473,7 @@ static int validate_sibling_call(struct objtool_file *file,
 				 struct instruction *insn,
 				 struct insn_state *state)
 {
-	if (insn_func(insn) && has_modified_stack_frame(insn, state)) {
+	if (insn_func(insn) && has_modified_stack_frame(state)) {
 		WARN_INSN(insn, "sibling call from callable instruction with modified stack frame");
 		return 1;
 	}
@@ -3504,7 +3503,7 @@ static int validate_return(struct symbol *func, struct instruction *insn, struct
 		return 1;
 	}
 
-	if (func && has_modified_stack_frame(insn, state)) {
+	if (func && has_modified_stack_frame(state)) {
 		WARN_INSN(insn, "return with modified stack frame");
 		return 1;
 	}
@@ -3814,7 +3813,7 @@ static int validate_unwind_hints(struct objtool_file *file, struct section *sec)
 	if (!file->hints)
 		return 0;
 
-	init_insn_state(file, &state, sec);
+	init_insn_state(&state, sec);
 
 	if (sec) {
 		sec_for_each_insn(file, sec, insn)
@@ -4221,7 +4220,7 @@ static int validate_section(struct objtool_file *file, struct section *sec)
 		if (func->type != STT_FUNC)
 			continue;
 
-		init_insn_state(file, &state, sec);
+		init_insn_state(&state, sec);
 		set_func_state(&state.cfi);
 
 		warnings += validate_symbol(file, sec, func, &state);
