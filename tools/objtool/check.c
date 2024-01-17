@@ -2725,9 +2725,7 @@ static bool has_valid_stack_frame(struct insn_state *state)
 	return false;
 }
 
-static int update_cfi_state_regs(struct instruction *insn,
-				  struct cfi_state *cfi,
-				  struct stack_op *op)
+static int update_cfi_state_regs(struct cfi_state *cfi, struct stack_op *op)
 {
 	struct cfi_reg *cfa = &cfi->cfa;
 
@@ -2840,7 +2838,7 @@ static int update_cfi_state(struct instruction *insn,
 
 	if (cfi->type == UNWIND_HINT_TYPE_REGS ||
 	    cfi->type == UNWIND_HINT_TYPE_REGS_PARTIAL)
-		return update_cfi_state_regs(insn, cfi, op);
+		return update_cfi_state_regs(cfi, op);
 
 	switch (op->dest.type) {
 
@@ -3237,7 +3235,7 @@ static int update_cfi_state(struct instruction *insn,
  * and replacement) into a single shared CFI array which can be used to detect
  * conflicts and nicely feed a linear array of ORC entries to the unwinder.
  */
-static int propagate_alt_cfi(struct objtool_file *file, struct instruction *insn)
+static int propagate_alt_cfi(struct instruction *insn)
 {
 	struct cfi_state **alt_cfi;
 	int group_off;
@@ -3641,7 +3639,7 @@ static int validate_branch(struct objtool_file *file, struct symbol *func,
 
 		insn->visited |= visited;
 
-		if (propagate_alt_cfi(file, insn))
+		if (propagate_alt_cfi(insn))
 			return 1;
 
 		if (!insn->ignore_alts && insn->alts) {
