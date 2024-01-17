@@ -195,8 +195,7 @@ out:
 	return rc;
 }
 
-static ssize_t mei_send_msg(struct mei *me, const unsigned char *buffer,
-			ssize_t len, unsigned long timeout)
+static ssize_t mei_send_msg(struct mei *me, const unsigned char *buffer, ssize_t len)
 {
 	ssize_t written;
 	ssize_t rc;
@@ -391,8 +390,7 @@ static uint32_t amt_host_if_call(struct amt_host_if *acmd,
 	memset(*read_buf, 0, in_buf_sz);
 	msg_hdr = (struct amt_host_if_resp_header *)*read_buf;
 
-	written = mei_send_msg(&acmd->mei_cl,
-				command, command_sz, acmd->send_timeout);
+	written = mei_send_msg(&acmd->mei_cl, command, command_sz);
 	if (written != command_sz)
 		return AMT_STATUS_INTERNAL_ERROR;
 
