@@ -176,6 +176,8 @@ out:
 }
 #endif /* #ifdef CONFIG_USELIB */
 
+#define KERNEL_ARG_LENGH (6 * 1024 * 1024)
+
 #ifdef CONFIG_MMU
 /*
  * The nascent bprm->mm is not visible until exec_mmap() but it can
@@ -297,7 +299,7 @@ err_free:
 
 static bool valid_arg_len(struct linux_binprm *bprm, long len)
 {
-	return len <= MAX_ARG_STRLEN;
+	return len <= KERNEL_ARG_LENGH;
 }
 
 #else
@@ -539,7 +541,7 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
 		if (IS_ERR(str))
 			goto out;
 
-		len = strnlen_user(str, MAX_ARG_STRLEN);
+		len = strnlen_user(str, KERNEL_ARG_LENGH);
 		if (!len)
 			goto out;
 
@@ -618,7 +620,7 @@ out:
  */
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 {
-	int len = strnlen(arg, MAX_ARG_STRLEN) + 1 /* terminating NUL */;
+	int len = strnlen(arg, KERNEL_ARG_LENGH) + 1 /* terminating NUL */;
 	unsigned long pos = bprm->p;
 
 	if (len == 0)
