@@ -540,8 +540,9 @@ struct sched_entity {
 	u64				deadline;
 	u64				min_vruntime;
 
-	struct list_head		group_node;
 	unsigned int			on_rq;
+	/* 1st cacheline boundary */
+	struct list_head		group_node;
 
 	u64				exec_start;
 	u64				sum_exec_runtime;
