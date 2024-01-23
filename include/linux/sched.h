@@ -534,6 +534,15 @@ struct sched_statistics {
 } ____cacheline_aligned;
 
 struct sched_entity {
+#ifdef CONFIG_SMP
+	/*
+	 * Per entity load average tracking.
+	 *
+	 * Put into separate cache line so it does not
+	 * collide with read-mostly values above.
+	 */
+	struct sched_avg		avg;
+#endif
 	/* For load-balancing: */
 	struct load_weight		load;
 	struct rb_node			run_node;
@@ -562,16 +571,6 @@ struct sched_entity {
 	struct cfs_rq			*my_q;
 	/* cached value of my_q->h_nr_running */
 	unsigned long			runnable_weight;
-#endif
-
-#ifdef CONFIG_SMP
-	/*
-	 * Per entity load average tracking.
-	 *
-	 * Put into separate cache line so it does not
-	 * collide with read-mostly values above.
-	 */
-	struct sched_avg		avg;
 #endif
 };
 
