@@ -9744,8 +9744,8 @@ static bool sched_use_asym_prio(struct sched_domain *sd, int cpu)
 	if (!(sd->flags & SD_ASYM_PACKING))
 		return false;
 
-	return (!sched_smt_active()) ||
-		(sd->flags & SD_SHARE_CPUCAPACITY) || is_core_idle(cpu);
+	return (sd->flags & SD_SHARE_CPUCAPACITY) ||
+		(is_core_idle(cpu) && test_bit(cpu_core_flags(), (void*)&sd->flags));
 }
 
 static inline bool sched_asym(struct sched_domain *sd, int dst_cpu, int src_cpu)
