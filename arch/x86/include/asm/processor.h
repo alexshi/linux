@@ -502,9 +502,6 @@ struct thread_struct {
 
 	struct thread_shstk	shstk;
 #endif
-
-	/* Floating point and extended processor state */
-	struct fpu		*fpu;
 };
 
 #define x86_task_fpu(task) ((struct fpu *)((void *)(task) + sizeof(*(task))))
