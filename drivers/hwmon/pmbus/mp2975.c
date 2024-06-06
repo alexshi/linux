@@ -10,8 +10,8 @@
 #include <linux/i2c.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
+#include <linux/mod_devicetable.h>
 #include <linux/module.h>
-#include <linux/of_device.h>
 #include "pmbus.h"
 
 /* Vendor specific registers. */
@@ -1000,10 +1000,7 @@ static int mp2975_probe(struct i2c_client *client)
 	if (!data)
 		return -ENOMEM;
 
-	if (client->dev.of_node)
-		data->chip_id = (enum chips)(unsigned long)of_device_get_match_data(&client->dev);
-	else
-		data->chip_id = i2c_match_id(mp2975_id, client)->driver_data;
+	data->chip_id = (kernel_ulong_t)i2c_get_match_data(client);
 
 	memcpy(data->max_phases, mp2975_max_phases[data->chip_id],
 	       sizeof(data->max_phases));
@@ -1069,7 +1066,7 @@ static int mp2975_probe(struct i2c_client *client)
 	return pmbus_do_probe(client, info);
 }
 
-static const struct of_device_id __maybe_unused mp2975_of_match[] = {
+static const struct of_device_id mp2975_of_match[] = {
 	{.compatible = "mps,mp2971", .data = (void *)mp2971},
 	{.compatible = "mps,mp2973", .data = (void *)mp2973},
 	{.compatible = "mps,mp2975", .data = (void *)mp2975},
