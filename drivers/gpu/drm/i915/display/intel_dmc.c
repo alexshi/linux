@@ -26,10 +26,12 @@
 #include <linux/firmware.h>
 
 #include "i915_drv.h"
+#include "i915_gpu_error.h"
 #include "i915_reg.h"
 #include "intel_de.h"
 #include "intel_dmc.h"
 #include "intel_dmc_regs.h"
+#include "intel_step.h"
 
 /**
  * DOC: DMC Firmware Support
@@ -115,6 +117,9 @@ static bool dmc_firmware_param_disabled(struct drm_i915_private *i915)
 #define XE2LPD_DMC_PATH			DMC_PATH(xe2lpd)
 MODULE_FIRMWARE(XE2LPD_DMC_PATH);
 
+#define BMG_DMC_PATH			DMC_PATH(bmg)
+MODULE_FIRMWARE(BMG_DMC_PATH);
+
 #define MTL_DMC_PATH			DMC_PATH(mtl)
 MODULE_FIRMWARE(MTL_DMC_PATH);
 
@@ -166,6 +171,9 @@ static const char *dmc_firmware_default(struct drm_i915_private *i915, u32 *size
 	if (DISPLAY_VER_FULL(i915) == IP_VER(20, 0)) {
 		fw_path = XE2LPD_DMC_PATH;
 		max_fw_size = XE2LPD_DMC_MAX_FW_SIZE;
+	} else if (DISPLAY_VER_FULL(i915) == IP_VER(14, 1)) {
+		fw_path = BMG_DMC_PATH;
+		max_fw_size = XELPDP_DMC_MAX_FW_SIZE;
 	} else if (DISPLAY_VER_FULL(i915) == IP_VER(14, 0)) {
 		fw_path = MTL_DMC_PATH;
 		max_fw_size = XELPDP_DMC_MAX_FW_SIZE;
