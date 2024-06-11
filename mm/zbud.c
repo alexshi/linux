@@ -142,10 +142,10 @@ static struct zbud_header *init_zbud_folio(struct folio *folio)
 	return zhdr;
 }
 
-/* Resets the struct page fields and frees the page */
-static void free_zbud_page(struct zbud_header *zhdr)
+/* Resets the struct folio fields and frees the folio */
+static void free_zbud_folio(struct zbud_header *zhdr)
 {
-	__free_page(virt_to_page(zhdr));
+	folio_put(virt_to_folio(zhdr));
 }
 
 /*
@@ -327,7 +327,7 @@ static void zbud_free(struct zbud_pool *pool, unsigned long handle)
 
 	if (zhdr->first_chunks == 0 && zhdr->last_chunks == 0) {
 		/* zbud page is empty, free */
-		free_zbud_page(zhdr);
+		free_zbud_folio(zhdr);
 		pool->pages_nr--;
 	} else {
 		/* Add to unbuddied list */
