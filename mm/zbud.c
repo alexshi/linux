@@ -132,10 +132,10 @@ static int size_to_chunks(size_t size)
 #define for_each_unbuddied_list(_iter, _begin) \
 	for ((_iter) = (_begin); (_iter) < NCHUNKS; (_iter)++)
 
-/* Initializes the zbud header of a newly allocated zbud page */
-static struct zbud_header *init_zbud_page(struct page *page)
+/* Initializes the zbud header of a newly allocated zbud folio */
+static struct zbud_header *init_zbud_folio(struct folio *folio)
 {
-	struct zbud_header *zhdr = page_address(page);
+	struct zbud_header *zhdr = folio_address(folio);
 	zhdr->first_chunks = 0;
 	zhdr->last_chunks = 0;
 	INIT_LIST_HEAD(&zhdr->buddy);
@@ -279,7 +279,7 @@ static int zbud_alloc(struct zbud_pool *pool, size_t size, gfp_t gfp,
 		return -ENOMEM;
 	spin_lock(&pool->lock);
 	pool->pages_nr++;
-	zhdr = init_zbud_page(page);
+	zhdr = init_zbud_folio(page_folio(page));
 	bud = FIRST;
 
 found:
