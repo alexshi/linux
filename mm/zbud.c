@@ -249,7 +249,7 @@ static int zbud_alloc(struct zbud_pool *pool, size_t size, gfp_t gfp,
 	int chunks, i, freechunks;
 	struct zbud_header *zhdr = NULL;
 	enum buddy bud;
-	struct page *page;
+	struct folio *folio;
 
 	if (!size || (gfp & __GFP_HIGHMEM))
 		return -EINVAL;
@@ -274,12 +274,12 @@ static int zbud_alloc(struct zbud_pool *pool, size_t size, gfp_t gfp,
 
 	/* Couldn't find unbuddied zbud page, create new one */
 	spin_unlock(&pool->lock);
-	page = alloc_page(gfp);
-	if (!page)
+	folio = folio_alloc(gfp, 0);
+	if (!folio)
 		return -ENOMEM;
 	spin_lock(&pool->lock);
 	pool->pages_nr++;
-	zhdr = init_zbud_folio(page_folio(page));
+	zhdr = init_zbud_folio(folio);
 	bud = FIRST;
 
 found:
