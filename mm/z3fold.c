@@ -1087,31 +1087,31 @@ headless:
  * @pool:	pool in which the allocation resided
  * @handle:	handle associated with the allocation returned by z3fold_alloc()
  *
- * In the case that the z3fold page in which the allocation resides is under
+ * In the case that the z3fold folio in which the allocation resides is under
  * reclaim, as indicated by the PAGE_CLAIMED flag being set, this function
- * only sets the first|middle|last_chunks to 0.  The page is actually freed
- * once all buddies are evicted (see z3fold_reclaim_page() below).
+ * only sets the first|middle|last_chunks to 0.  The folio is actually freed
+ * once all buddies are evicted (see z3fold_reclaim_folio() below).
  */
 static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 {
 	struct z3fold_header *zhdr;
-	struct page *page;
+	struct folio *folio;
 	enum buddy bud;
 	bool page_claimed;
 
 	zhdr = get_z3fold_header(handle);
-	page = virt_to_page(zhdr);
-	page_claimed = test_and_set_bit(PAGE_CLAIMED, &page->private);
+	folio = virt_to_folio(zhdr);
+	page_claimed = test_and_set_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 
-	if (test_bit(PAGE_HEADLESS, &page->private)) {
-		/* if a headless page is under reclaim, just leave.
+	if (test_bit(PAGE_HEADLESS, (unsigned long *)&folio->private)) {
+		/* if a headless folio is under reclaim, just leave.
 		 * NB: we use test_and_set_bit for a reason: if the bit
-		 * has not been set before, we release this page
+		 * has not been set before, we release this folio
 		 * immediately so we don't care about its value any more.
 		 */
 		if (!page_claimed) {
 			put_z3fold_header(zhdr);
-			free_z3fold_page(page, true);
+			free_z3fold_page(&folio->page, true);
 			atomic64_dec(&pool->pages_nr);
 		}
 		return;
@@ -1142,24 +1142,24 @@ static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 	if (put_z3fold_locked_list(zhdr))
 		return;
 	if (page_claimed) {
-		/* the page has not been claimed by us */
+		/* the folio has not been claimed by us */
 		put_z3fold_header(zhdr);
 		return;
 	}
-	if (test_and_set_bit(NEEDS_COMPACTING, &page->private)) {
-		clear_bit(PAGE_CLAIMED, &page->private);
+	if (test_and_set_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private)) {
+		clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 		put_z3fold_header(zhdr);
 		return;
 	}
 	if (zhdr->cpu < 0 || !cpu_online(zhdr->cpu)) {
 		zhdr->cpu = -1;
 		kref_get(&zhdr->refcount);
-		clear_bit(PAGE_CLAIMED, &page->private);
+		clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 		do_compact_page(zhdr, true);
 		return;
 	}
 	kref_get(&zhdr->refcount);
-	clear_bit(PAGE_CLAIMED, &page->private);
+	clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 	queue_work_on(zhdr->cpu, pool->compact_wq, &zhdr->work);
 	put_z3fold_header(zhdr);
 }
