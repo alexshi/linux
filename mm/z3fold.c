@@ -1251,22 +1251,23 @@ static bool z3fold_page_isolate(struct page *page, isolate_mode_t mode)
 {
 	struct z3fold_header *zhdr;
 	struct z3fold_pool *pool;
+	struct folio *folio = page_folio(page);
 
-	VM_BUG_ON_PAGE(PageIsolated(page), page);
+	VM_BUG_ON_FOLIO(folio_test_isolated(folio), folio);
 
-	if (test_bit(PAGE_HEADLESS, &page->private))
+	if (test_bit(PAGE_HEADLESS, (unsigned long *)&folio->private))
 		return false;
 
-	zhdr = page_address(page);
+	zhdr = folio_address(folio);
 	z3fold_page_lock(zhdr);
-	if (test_bit(NEEDS_COMPACTING, &page->private) ||
-	    test_bit(PAGE_STALE, &page->private))
+	if (test_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private) ||
+	    test_bit(PAGE_STALE, (unsigned long *)&folio->private))
 		goto out;
 
 	if (zhdr->mapped_count != 0 || zhdr->foreign_handles != 0)
 		goto out;
 
-	if (test_and_set_bit(PAGE_CLAIMED, &page->private))
+	if (test_and_set_bit(PAGE_CLAIMED, (unsigned long *)&folio->private))
 		goto out;
 	pool = zhdr_to_pool(zhdr);
 	spin_lock(&pool->lock);
