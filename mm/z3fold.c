@@ -735,14 +735,14 @@ static int z3fold_compact_page(struct z3fold_header *zhdr)
 static void do_compact_page(struct z3fold_header *zhdr, bool locked)
 {
 	struct z3fold_pool *pool = zhdr_to_pool(zhdr);
-	struct page *page;
+	struct folio *folio;
 
-	page = virt_to_page(zhdr);
+	folio = virt_to_folio(zhdr);
 	if (locked)
 		WARN_ON(z3fold_page_trylock(zhdr));
 	else
 		z3fold_page_lock(zhdr);
-	if (WARN_ON(!test_and_clear_bit(NEEDS_COMPACTING, &page->private))) {
+	if (WARN_ON(!test_and_clear_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private))) {
 		z3fold_page_unlock(zhdr);
 		return;
 	}
@@ -753,8 +753,8 @@ static void do_compact_page(struct z3fold_header *zhdr, bool locked)
 	if (put_z3fold_locked(zhdr))
 		return;
 
-	if (test_bit(PAGE_STALE, &page->private) ||
-	    test_and_set_bit(PAGE_CLAIMED, &page->private)) {
+	if (test_bit(PAGE_STALE, (unsigned long *)&folio->private) ||
+	    test_and_set_bit(PAGE_CLAIMED, (unsigned long *)&folio->private)) {
 		z3fold_page_unlock(zhdr);
 		return;
 	}
@@ -762,7 +762,7 @@ static void do_compact_page(struct z3fold_header *zhdr, bool locked)
 	if (!zhdr->foreign_handles && buddy_single(zhdr) &&
 	    zhdr->mapped_count == 0 && compact_single_buddy(zhdr)) {
 		if (!put_z3fold_locked(zhdr)) {
-			clear_bit(PAGE_CLAIMED, &page->private);
+			clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 			z3fold_page_unlock(zhdr);
 		}
 		return;
@@ -770,7 +770,7 @@ static void do_compact_page(struct z3fold_header *zhdr, bool locked)
 
 	z3fold_compact_page(zhdr);
 	add_to_unbuddied(pool, zhdr);
-	clear_bit(PAGE_CLAIMED, &page->private);
+	clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 	z3fold_page_unlock(zhdr);
 }
 
