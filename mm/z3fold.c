@@ -316,12 +316,11 @@ static inline void free_handle(unsigned long handle, struct z3fold_header *zhdr)
 }
 
 /* Initializes the z3fold header of a newly allocated z3fold page */
-static struct z3fold_header *init_z3fold_page(struct page *page, bool headless,
+static struct z3fold_header *init_z3fold_folio(struct folio *folio, bool headless,
 					struct z3fold_pool *pool, gfp_t gfp)
 {
-	struct z3fold_header *zhdr = page_address(page);
+	struct z3fold_header *zhdr = folio_address(folio);
 	struct z3fold_buddy_slots *slots;
-	struct folio *folio = page_folio(page);
 
 	clear_bit(PAGE_HEADLESS, (unsigned long *)&folio->private);
 	clear_bit(MIDDLE_CHUNK_MAPPED, (unsigned long *)&folio->private);
@@ -1006,7 +1005,7 @@ static int z3fold_alloc(struct z3fold_pool *pool, size_t size, gfp_t gfp,
 {
 	int chunks = size_to_chunks(size);
 	struct z3fold_header *zhdr = NULL;
-	struct page *page = NULL;
+	struct folio *folio = NULL;
 	enum buddy bud;
 	bool can_sleep = gfpflags_allow_blocking(gfp);
 
@@ -1030,35 +1029,35 @@ retry:
 				WARN_ON(1);
 				goto retry;
 			}
-			page = virt_to_page(zhdr);
+			folio = virt_to_folio(zhdr);
 			goto found;
 		}
 		bud = FIRST;
 	}
 
-	page = alloc_page(gfp);
-	if (!page)
+	folio = folio_alloc(gfp, 0);
+	if (!folio)
 		return -ENOMEM;
 
-	zhdr = init_z3fold_page(page, bud == HEADLESS, pool, gfp);
+	zhdr = init_z3fold_folio(folio, bud == HEADLESS, pool, gfp);
 	if (!zhdr) {
-		__free_page(page);
+		folio_put(folio);
 		return -ENOMEM;
 	}
 	atomic64_inc(&pool->pages_nr);
 
 	if (bud == HEADLESS) {
-		set_bit(PAGE_HEADLESS, &page->private);
+		set_bit(PAGE_HEADLESS, (unsigned long *)&folio->private);
 		goto headless;
 	}
 	if (can_sleep) {
-		lock_page(page);
-		__SetPageMovable(page, &z3fold_mops);
-		unlock_page(page);
+		folio_lock(folio);
+		__SetPageMovable(&folio->page, &z3fold_mops);
+		folio_unlock(folio);
 	} else {
-		WARN_ON(!trylock_page(page));
-		__SetPageMovable(page, &z3fold_mops);
-		unlock_page(page);
+		WARN_ON(!folio_trylock(folio));
+		__SetPageMovable(&folio->page, &z3fold_mops);
+		folio_unlock(folio);
 	}
 	z3fold_page_lock(zhdr);
 
