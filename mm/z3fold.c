@@ -1349,19 +1349,20 @@ static void z3fold_page_putback(struct page *page)
 {
 	struct z3fold_header *zhdr;
 	struct z3fold_pool *pool;
+	struct folio *folio = page_folio(page);
 
-	zhdr = page_address(page);
+	zhdr = folio_address(folio);
 	pool = zhdr_to_pool(zhdr);
 
 	z3fold_page_lock(zhdr);
 	if (!list_empty(&zhdr->buddy))
 		list_del_init(&zhdr->buddy);
-	INIT_LIST_HEAD(&page->lru);
+	INIT_LIST_HEAD(&folio->lru);
 	if (put_z3fold_locked(zhdr))
 		return;
 	if (list_empty(&zhdr->buddy))
 		add_to_unbuddied(pool, zhdr);
-	clear_bit(PAGE_CLAIMED, &page->private);
+	clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 	z3fold_page_unlock(zhdr);
 }
 
