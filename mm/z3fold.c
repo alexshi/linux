@@ -1175,15 +1175,15 @@ static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 static void *z3fold_map(struct z3fold_pool *pool, unsigned long handle)
 {
 	struct z3fold_header *zhdr;
-	struct page *page;
+	struct folio *folio;
 	void *addr;
 	enum buddy buddy;
 
 	zhdr = get_z3fold_header(handle);
 	addr = zhdr;
-	page = virt_to_page(zhdr);
+	folio = virt_to_folio(zhdr);
 
-	if (test_bit(PAGE_HEADLESS, &page->private))
+	if (test_bit(PAGE_HEADLESS, (unsigned long *)&folio->private))
 		goto out;
 
 	buddy = handle_to_buddy(handle);
@@ -1193,7 +1193,7 @@ static void *z3fold_map(struct z3fold_pool *pool, unsigned long handle)
 		break;
 	case MIDDLE:
 		addr += zhdr->start_middle << CHUNK_SHIFT;
-		set_bit(MIDDLE_CHUNK_MAPPED, &page->private);
+		set_bit(MIDDLE_CHUNK_MAPPED, (unsigned long *)&folio->private);
 		break;
 	case LAST:
 		addr += PAGE_SIZE - (handle_to_chunks(handle) << CHUNK_SHIFT);
@@ -1220,18 +1220,18 @@ out:
 static void z3fold_unmap(struct z3fold_pool *pool, unsigned long handle)
 {
 	struct z3fold_header *zhdr;
-	struct page *page;
+	struct folio *folio;
 	enum buddy buddy;
 
 	zhdr = get_z3fold_header(handle);
-	page = virt_to_page(zhdr);
+	folio = virt_to_folio(zhdr);
 
-	if (test_bit(PAGE_HEADLESS, &page->private))
+	if (test_bit(PAGE_HEADLESS, (unsigned long *)&folio->private))
 		return;
 
 	buddy = handle_to_buddy(handle);
 	if (buddy == MIDDLE)
-		clear_bit(MIDDLE_CHUNK_MAPPED, &page->private);
+		clear_bit(MIDDLE_CHUNK_MAPPED, (unsigned long *)&folio->private);
 	zhdr->mapped_count--;
 	put_z3fold_header(zhdr);
 }
