@@ -1289,18 +1289,20 @@ static int z3fold_page_migrate(struct page *newpage, struct page *page,
 {
 	struct z3fold_header *zhdr, *new_zhdr;
 	struct z3fold_pool *pool;
+	struct folio *folio = page_folio(page);
+	struct folio *newfolio = page_folio(newpage);
 
-	VM_BUG_ON_PAGE(!PageIsolated(page), page);
-	VM_BUG_ON_PAGE(!test_bit(PAGE_CLAIMED, &page->private), page);
-	VM_BUG_ON_PAGE(!PageLocked(newpage), newpage);
+	VM_BUG_ON_FOLIO(!folio_test_isolated(folio), folio);
+	VM_BUG_ON_FOLIO(!test_bit(PAGE_CLAIMED, (unsigned long *)&folio->private), folio);
+	VM_BUG_ON_FOLIO(!folio_test_locked(newfolio), newfolio);
 
-	zhdr = page_address(page);
+	zhdr = folio_address(folio);
 	pool = zhdr_to_pool(zhdr);
 
 	if (!z3fold_page_trylock(zhdr))
 		return -EAGAIN;
 	if (zhdr->mapped_count != 0 || zhdr->foreign_handles != 0) {
-		clear_bit(PAGE_CLAIMED, &page->private);
+		clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
 		z3fold_page_unlock(zhdr);
 		return -EBUSY;
 	}
@@ -1308,10 +1310,10 @@ static int z3fold_page_migrate(struct page *newpage, struct page *page,
 		z3fold_page_unlock(zhdr);
 		return -EAGAIN;
 	}
-	new_zhdr = page_address(newpage);
+	new_zhdr = folio_address(newfolio);
 	memcpy(new_zhdr, zhdr, PAGE_SIZE);
-	newpage->private = page->private;
-	set_bit(PAGE_MIGRATED, &page->private);
+	newfolio->private = folio->private;
+	set_bit(PAGE_MIGRATED, (unsigned long *)&folio->private);
 	z3fold_page_unlock(zhdr);
 	spin_lock_init(&new_zhdr->page_lock);
 	INIT_WORK(&new_zhdr->work, compact_page_work);
@@ -1320,7 +1322,7 @@ static int z3fold_page_migrate(struct page *newpage, struct page *page,
 	 * so we only have to reinitialize it.
 	 */
 	INIT_LIST_HEAD(&new_zhdr->buddy);
-	__ClearPageMovable(page);
+	__ClearPageMovable(&folio->page);
 
 	get_page(newpage);
 	z3fold_page_lock(new_zhdr);
@@ -1338,8 +1340,8 @@ static int z3fold_page_migrate(struct page *newpage, struct page *page,
 	queue_work_on(new_zhdr->cpu, pool->compact_wq, &new_zhdr->work);
 
 	/* PAGE_CLAIMED and PAGE_MIGRATED are cleared now. */
-	page->private = 0;
-	put_page(page);
+	folio->private = 0;
+	folio_put(folio);
 	return 0;
 }
 
