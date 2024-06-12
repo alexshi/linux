@@ -321,13 +321,14 @@ static struct z3fold_header *init_z3fold_page(struct page *page, bool headless,
 {
 	struct z3fold_header *zhdr = page_address(page);
 	struct z3fold_buddy_slots *slots;
+	struct folio *folio = page_folio(page);
 
-	clear_bit(PAGE_HEADLESS, &page->private);
-	clear_bit(MIDDLE_CHUNK_MAPPED, &page->private);
-	clear_bit(NEEDS_COMPACTING, &page->private);
-	clear_bit(PAGE_STALE, &page->private);
-	clear_bit(PAGE_CLAIMED, &page->private);
-	clear_bit(PAGE_MIGRATED, &page->private);
+	clear_bit(PAGE_HEADLESS, (unsigned long *)&folio->private);
+	clear_bit(MIDDLE_CHUNK_MAPPED, (unsigned long *)&folio->private);
+	clear_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private);
+	clear_bit(PAGE_STALE, (unsigned long *)&folio->private);
+	clear_bit(PAGE_CLAIMED, (unsigned long *)&folio->private);
+	clear_bit(PAGE_MIGRATED, (unsigned long *)&folio->private);
 	if (headless)
 		return zhdr;
 
