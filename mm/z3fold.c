@@ -790,13 +790,13 @@ static inline struct z3fold_header *__z3fold_alloc(struct z3fold_pool *pool,
 						size_t size, bool can_sleep)
 {
 	struct z3fold_header *zhdr = NULL;
-	struct page *page;
+	struct folio *folio;
 	struct list_head *unbuddied;
 	int chunks = size_to_chunks(size), i;
 
 lookup:
 	migrate_disable();
-	/* First, try to find an unbuddied z3fold page. */
+	/* First, try to find an unbuddied z3fold folio. */
 	unbuddied = this_cpu_ptr(pool->unbuddied);
 	for_each_unbuddied_list(i, chunks) {
 		struct list_head *l = &unbuddied[i];
@@ -823,9 +823,9 @@ lookup:
 		zhdr->cpu = -1;
 		spin_unlock(&pool->lock);
 
-		page = virt_to_page(zhdr);
-		if (test_bit(NEEDS_COMPACTING, &page->private) ||
-		    test_bit(PAGE_CLAIMED, &page->private)) {
+		folio = virt_to_folio(zhdr);
+		if (test_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private) ||
+		    test_bit(PAGE_CLAIMED, (unsigned long *)&folio->private)) {
 			z3fold_page_unlock(zhdr);
 			zhdr = NULL;
 			migrate_enable();
@@ -868,9 +868,9 @@ lookup:
 			zhdr->cpu = -1;
 			spin_unlock(&pool->lock);
 
-			page = virt_to_page(zhdr);
-			if (test_bit(NEEDS_COMPACTING, &page->private) ||
-			    test_bit(PAGE_CLAIMED, &page->private)) {
+			folio = virt_to_folio(zhdr);
+			if (test_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private) ||
+			    test_bit(PAGE_CLAIMED, (unsigned long *)&folio->private)) {
 				z3fold_page_unlock(zhdr);
 				zhdr = NULL;
 				if (can_sleep)
