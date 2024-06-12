@@ -440,12 +440,12 @@ static inline struct z3fold_pool *zhdr_to_pool(struct z3fold_header *zhdr)
 
 static void __release_z3fold_page(struct z3fold_header *zhdr, bool locked)
 {
-	struct page *page = virt_to_page(zhdr);
+	struct folio *folio = virt_to_folio(zhdr);
 	struct z3fold_pool *pool = zhdr_to_pool(zhdr);
 
 	WARN_ON(!list_empty(&zhdr->buddy));
-	set_bit(PAGE_STALE, &page->private);
-	clear_bit(NEEDS_COMPACTING, &page->private);
+	set_bit(PAGE_STALE, (unsigned long *)&folio->private);
+	clear_bit(NEEDS_COMPACTING, (unsigned long *)&folio->private);
 	spin_lock(&pool->lock);
 	spin_unlock(&pool->lock);
 
