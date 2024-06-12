@@ -347,10 +347,8 @@ static struct z3fold_header *init_z3fold_folio(struct folio *folio, bool headles
 }
 
 /* Resets the struct page fields and frees the page */
-static void free_z3fold_page(struct page *page, bool headless)
+static void free_z3fold_page(struct folio *folio, bool headless)
 {
-	struct folio *folio = page_folio(page);
-
 	if (!headless) {
 		folio_lock(folio);
 		__ClearPageMovable(&folio->page);
@@ -506,7 +504,7 @@ static void free_pages_work(struct work_struct *w)
 			continue;
 		spin_unlock(&pool->stale_lock);
 		cancel_work_sync(&zhdr->work);
-		free_z3fold_page(&folio->page, false);
+		free_z3fold_page(folio, false);
 		cond_resched();
 		spin_lock(&pool->stale_lock);
 	}
@@ -1090,7 +1088,7 @@ headless:
  * In the case that the z3fold folio in which the allocation resides is under
  * reclaim, as indicated by the PAGE_CLAIMED flag being set, this function
  * only sets the first|middle|last_chunks to 0.  The folio is actually freed
- * once all buddies are evicted (see z3fold_reclaim_folio() below).
+ * once all buddies are evicted (see z3fold_reclaim_page() below).
  */
 static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 {
@@ -1111,7 +1109,7 @@ static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 		 */
 		if (!page_claimed) {
 			put_z3fold_header(zhdr);
-			free_z3fold_page(&folio->page, true);
+			free_z3fold_page(folio, true);
 			atomic64_dec(&pool->pages_nr);
 		}
 		return;
