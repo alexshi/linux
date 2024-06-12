@@ -350,12 +350,14 @@ static struct z3fold_header *init_z3fold_page(struct page *page, bool headless,
 /* Resets the struct page fields and frees the page */
 static void free_z3fold_page(struct page *page, bool headless)
 {
+	struct folio *folio = page_folio(page);
+
 	if (!headless) {
-		lock_page(page);
-		__ClearPageMovable(page);
-		unlock_page(page);
+		folio_lock(folio);
+		__ClearPageMovable(&folio->page);
+		folio_unlock(folio);
 	}
-	__free_page(page);
+	folio_put(folio);
 }
 
 /* Helper function to build the index */
