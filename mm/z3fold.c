@@ -690,12 +690,12 @@ out_fail:
 /* Has to be called with lock held */
 static int z3fold_compact_page(struct z3fold_header *zhdr)
 {
-	struct page *page = virt_to_page(zhdr);
+	struct folio *folio = virt_to_folio(zhdr);
 
-	if (test_bit(MIDDLE_CHUNK_MAPPED, &page->private))
+	if (test_bit(MIDDLE_CHUNK_MAPPED, (unsigned long *)&folio->private))
 		return 0; /* can't move middle chunk, it's used */
 
-	if (unlikely(PageIsolated(page)))
+	if (unlikely(folio_test_isolated(folio)))
 		return 0;
 
 	if (zhdr->middle_chunks == 0)
