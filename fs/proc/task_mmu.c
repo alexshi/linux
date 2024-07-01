@@ -614,7 +614,7 @@ const struct file_operations proc_pid_maps_operations = {
 	.llseek		= seq_lseek,
 	.release	= proc_map_release,
 	.unlocked_ioctl = procfs_procmap_ioctl,
-	.compat_ioctl	= procfs_procmap_ioctl,
+	.compat_ioctl	= compat_ptr_ioctl,
 };
 
 /*
