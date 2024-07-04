@@ -3082,7 +3082,7 @@ int split_huge_page_to_list_to_order(struct page *page, struct list_head *list,
 	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
 	VM_BUG_ON_FOLIO(!folio_test_large(folio), folio);
 
-	if (new_order >= order)
+	if (new_order >= folio_order(folio))
 		return -EINVAL;
 
 	if (folio_test_anon(folio)) {
@@ -3285,14 +3285,13 @@ void deferred_split_folio(struct folio *folio)
 #ifdef CONFIG_MEMCG
 	struct mem_cgroup *memcg = folio_memcg(folio);
 #endif
-	int order = folio_order(folio);
 	unsigned long flags;
 
 	/*
 	 * Order 1 folios have no space for a deferred list, but we also
 	 * won't waste much memory by not adding them to the deferred list.
 	 */
-	if (order <= 1)
+	if (folio_order(folio) <= 1)
 		return;
 
 	/*
@@ -3313,9 +3312,9 @@ void deferred_split_folio(struct folio *folio)
 
 	spin_lock_irqsave(&ds_queue->split_queue_lock, flags);
 	if (list_empty(&folio->_deferred_list)) {
-		if (order >= HPAGE_PMD_ORDER)
+		if (folio_test_pmd_mappable(folio))
 			count_vm_event(THP_DEFERRED_SPLIT_PAGE);
-		count_mthp_stat(order, MTHP_STAT_SPLIT_DEFERRED);
+		count_mthp_stat(folio_order(folio), MTHP_STAT_SPLIT_DEFERRED);
 		list_add_tail(&folio->_deferred_list, &ds_queue->split_queue);
 		ds_queue->split_queue_len++;
 #ifdef CONFIG_MEMCG
