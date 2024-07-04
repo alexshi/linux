@@ -369,10 +369,6 @@ also applies to the regions registered in khugepaged.
 Monitoring usage
 ================
 
-.. note::
-   Currently the below counters only record events relating to
-   PMD-sized THP. Events relating to other THP sizes are not included.
-
 The number of PMD-sized anonymous transparent huge pages currently used by the
 system is available by reading the AnonHugePages field in ``/proc/meminfo``.
 To identify what applications are using PMD-sized anonymous transparent huge
@@ -516,8 +512,8 @@ file_fallback_charge
 
 split
 	is incremented every time a huge page is successfully split into
-	base pages. This can happen for a variety of reasons but a common
-	reason is that a huge page is old and is being reclaimed.
+	smaller orders. This can happen for a variety of reasons but a
+	common reason is that a huge page is old and is being reclaimed.
 	This action implies splitting any block mappings into PTEs.
 
 split_failed
