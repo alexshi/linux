@@ -128,19 +128,6 @@ static inline bool hugepage_global_always(void)
 			(1<<TRANSPARENT_HUGEPAGE_FLAG);
 }
 
-static inline bool hugepage_pmd_enabled(void)
-{
-	/*
-	 * We cover both the anon and the file-backed case here; file-backed
-	 * hugepages, when configured in, are determined by the global control.
-	 * Anon pmd-sized hugepages are determined by the pmd-size control.
-	 */
-	return (IS_ENABLED(CONFIG_READ_ONLY_THP_FOR_FS) && hugepage_global_enabled()) ||
-	       test_bit(PMD_ORDER, &huge_anon_orders_always) ||
-	       test_bit(PMD_ORDER, &huge_anon_orders_madvise) ||
-	       (test_bit(PMD_ORDER, &huge_anon_orders_inherit) && hugepage_global_enabled());
-}
-
 static inline int highest_order(unsigned long orders)
 {
 	return fls_long(orders) - 1;
