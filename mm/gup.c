@@ -3814,6 +3814,9 @@ long memfd_pin_folios(struct file *memfd, loff_t start, loff_t end,
 	if (!shmem_file(memfd) && !is_file_hugepages(memfd))
 		return -EINVAL;
 
+	if (end >= i_size_read(file_inode(memfd)))
+		return -EINVAL;
+
 	if (is_file_hugepages(memfd)) {
 		h = hstate_file(memfd);
 		pgshift = huge_page_shift(h);
