@@ -265,16 +265,16 @@ pmd_t hash__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addres
  * the base page size hptes
  */
 void hash__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-				  pgtable_t pgtable)
+				      struct ptdesc *ptdesc)
 {
-	pgtable_t *pgtable_slot;
+	pte_t **pgtable_slot;
 
 	assert_spin_locked(pmd_lockptr(mm, pmdp));
 	/*
 	 * we store the pgtable in the second half of PMD
 	 */
 	pgtable_slot = (pgtable_t *)pmdp + PTRS_PER_PMD;
-	*pgtable_slot = pgtable;
+	*pgtable_slot = (pte_t)ptdesc;
 	/*
 	 * expose the deposited pgtable to other cpus.
 	 * before we set the hugepage PTE at pmd level

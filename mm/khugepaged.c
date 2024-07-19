@@ -1232,7 +1232,7 @@ static int collapse_huge_page(struct mm_struct *mm, unsigned long address,
 	BUG_ON(!pmd_none(*pmd));
 	folio_add_new_anon_rmap(folio, vma, address, RMAP_EXCLUSIVE);
 	folio_add_lru_vma(folio, vma);
-	pgtable_trans_huge_deposit(mm, pmd, pgtable);
+	pgtable_trans_huge_deposit(mm, pmd, page_ptdesc(pgtable));
 	set_pmd_at(mm, address, pmd, _pmd);
 	update_mmu_cache_pmd(vma, address, pmd);
 	spin_unlock(pmd_ptl);

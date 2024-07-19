@@ -1714,7 +1714,7 @@ pud_t pudp_xchg_direct(struct mm_struct *, unsigned long, pud_t *, pud_t);
 
 #define __HAVE_ARCH_PGTABLE_DEPOSIT
 void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-				pgtable_t pgtable);
+				struct ptdesc *ptdesc);
 
 #define __HAVE_ARCH_PGTABLE_WITHDRAW
 struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);

@@ -1234,7 +1234,7 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
 	}
 
 	if (ptdesc) {
-		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, ptdesc_page(ptdesc));
+		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, ptdesc);
 		mm_inc_nr_ptes(vma->vm_mm);
 	}
 	pmd_entry = mk_pmd(&zero_folio->page, vmf->vma->vm_page_prot);

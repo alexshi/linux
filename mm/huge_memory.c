@@ -994,7 +994,7 @@ static vm_fault_t __do_huge_pmd_anonymous_page(struct vm_fault *vmf,
 		entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
 		folio_add_new_anon_rmap(folio, vma, haddr, RMAP_EXCLUSIVE);
 		folio_add_lru_vma(folio, vma);
-		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, ptdesc_page(ptdesc));
+		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, ptdesc);
 		set_pmd_at(vma->vm_mm, haddr, vmf->pmd, entry);
 		update_mmu_cache_pmd(vma, vmf->address, vmf->pmd);
 		add_mm_counter(vma->vm_mm, MM_ANONPAGES, HPAGE_PMD_NR);
@@ -1061,7 +1061,7 @@ static void set_huge_zero_folio(struct ptdesc *ptdesc, struct mm_struct *mm,
 		return;
 	entry = mk_pmd(&zero_folio->page, vma->vm_page_prot);
 	entry = pmd_mkhuge(entry);
-	pgtable_trans_huge_deposit(mm, pmd, ptdesc_page(ptdesc));
+	pgtable_trans_huge_deposit(mm, pmd, ptdesc);
 	set_pmd_at(mm, haddr, pmd, entry);
 	mm_inc_nr_ptes(mm);
 }
@@ -1164,7 +1164,7 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
 	}
 
 	if (ptdesc) {
-		pgtable_trans_huge_deposit(mm, pmd, ptdesc_page(ptdesc));
+		pgtable_trans_huge_deposit(mm, pmd, ptdesc);
 		mm_inc_nr_ptes(mm);
 		ptdesc = NULL;
 	}
@@ -1401,7 +1401,7 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		}
 		add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
 		mm_inc_nr_ptes(dst_mm);
-		pgtable_trans_huge_deposit(dst_mm, dst_pmd, ptdesc_page(ptdesc));
+		pgtable_trans_huge_deposit(dst_mm, dst_pmd, ptdesc);
 		if (!userfaultfd_wp(dst_vma))
 			pmd = pmd_swp_clear_uffd_wp(pmd);
 		set_pmd_at(dst_mm, addr, dst_pmd, pmd);
@@ -1446,7 +1446,7 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
 out_zero_page:
 	mm_inc_nr_ptes(dst_mm);
-	pgtable_trans_huge_deposit(dst_mm, dst_pmd, ptdesc_page(ptdesc));
+	pgtable_trans_huge_deposit(dst_mm, dst_pmd, ptdesc);
 	pmdp_set_wrprotect(src_mm, addr, src_pmd);
 	if (!userfaultfd_wp(dst_vma))
 		pmd = pmd_clear_uffd_wp(pmd);
@@ -1958,7 +1958,7 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 		if (pmd_move_must_withdraw(new_ptl, old_ptl, vma)) {
 			struct ptdesc *ptdesc;
 			ptdesc = pgtable_trans_huge_withdraw(mm, old_pmd);
-			pgtable_trans_huge_deposit(mm, new_pmd, ptdesc_page(ptdesc));
+			pgtable_trans_huge_deposit(mm, new_pmd, ptdesc);
 		}
 		pmd = move_soft_dirty_pmd(pmd);
 		set_pmd_at(mm, new_addr, new_pmd, pmd);
@@ -2233,7 +2233,7 @@ int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pm
 	set_pmd_at(mm, dst_addr, dst_pmd, _dst_pmd);
 
 	src_ptdesc = pgtable_trans_huge_withdraw(mm, src_pmd);
-	pgtable_trans_huge_deposit(mm, dst_pmd, ptdesc_page(src_ptdesc));
+	pgtable_trans_huge_deposit(mm, dst_pmd, src_ptdesc);
 unlock_ptls:
 	double_pt_unlock(src_ptl, dst_ptl);
 	if (src_anon_vma) {

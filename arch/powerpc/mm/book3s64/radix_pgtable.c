@@ -1402,9 +1402,9 @@ pmd_t radix__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long addre
  * list_head memory area.
  */
 void radix__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-				 pgtable_t pgtable)
+				       struct ptdesc *ptdesc)
 {
-	struct list_head *lh = (struct list_head *) pgtable;
+	struct list_head *lh = (struct list_head *)ptdesc;
 
 	assert_spin_locked(pmd_lockptr(mm, pmdp));
 
@@ -1413,7 +1413,7 @@ void radix__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 		INIT_LIST_HEAD(lh);
 	else
 		list_add(lh, (struct list_head *) pmd_huge_pte(mm, pmdp));
-	pmd_huge_pte(mm, pmdp) = pgtable;
+	pmd_huge_pte(mm, pmdp) = ptdesc_page(ptdesc);
 }
 
 struct ptdesc *radix__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
