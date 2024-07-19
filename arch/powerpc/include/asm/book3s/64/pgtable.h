@@ -1373,7 +1373,7 @@ static inline void pgtable_trans_huge_deposit(struct mm_struct *mm,
 }
 
 #define __HAVE_ARCH_PGTABLE_WITHDRAW
-static inline pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm,
+static inline struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm,
 						    pmd_t *pmdp)
 {
 	if (radix_enabled())

@@ -577,7 +577,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 	pmd_huge_pte(mm, pmdp) = (struct ptdesc *)pgtable;
 }
 
-pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
 {
 	struct list_head *lh;
 	pgtable_t pgtable;
@@ -598,7 +598,7 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
 	set_pte(ptep, __pte(_PAGE_INVALID));
 	ptep++;
 	set_pte(ptep, __pte(_PAGE_INVALID));
-	return pgtable;
+	return (struct ptdesc *)pgtable;
 }
 #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
 
