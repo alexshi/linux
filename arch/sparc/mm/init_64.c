@@ -2918,15 +2918,13 @@ void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 	free_page((unsigned long)pte);
 }
 
-static void __pte_free(pgtable_t pte)
+static void __pte_free(struct ptdesc *ptdesc)
 {
-	struct ptdesc *ptdesc = virt_to_ptdesc(pte);
-
 	pagetable_pte_dtor(ptdesc);
 	pagetable_free(ptdesc);
 }
 
-void pte_free(struct mm_struct *mm, pgtable_t pte)
+void pte_free(struct mm_struct *mm, struct ptdesc *pte)
 {
 	__pte_free(pte);
 }
@@ -2945,7 +2943,7 @@ static void pte_free_now(struct rcu_head *head)
 	struct page *page;
 
 	page = container_of(head, struct page, rcu_head);
-	__pte_free((pgtable_t)page_address(page));
+	__pte_free(virt_to_ptdesc(page_address(page)));
 }
 
 void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)

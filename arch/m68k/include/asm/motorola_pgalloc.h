@@ -39,9 +39,9 @@ static inline void *pte_alloc_one(struct mm_struct *mm)
 	return get_pointer_table(TABLE_PTE);
 }
 
-static inline void pte_free(struct mm_struct *mm, pgtable_t pgtable)
+static inline void pte_free(struct mm_struct *mm, struct ptdesc *ptdesc)
 {
-	free_pointer_table(pgtable, TABLE_PTE);
+	free_pointer_table((pte_t *)(ptdesc), TABLE_PTE);
 }
 
 static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pgtable,

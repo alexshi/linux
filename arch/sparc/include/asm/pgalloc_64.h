@@ -63,7 +63,7 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
 pte_t *pte_alloc_one_kernel(struct mm_struct *mm);
 struct ptdesc *pte_alloc_one(struct mm_struct *mm);
 void pte_free_kernel(struct mm_struct *mm, pte_t *pte);
-void pte_free(struct mm_struct *mm, pgtable_t ptepage);
+void pte_free(struct mm_struct *mm, struct ptdesc *ptepage);
 
 /* arch use pte_free_defer() implementation in arch/sparc/mm/init_64.c */
 #define pte_free_defer pte_free_defer
