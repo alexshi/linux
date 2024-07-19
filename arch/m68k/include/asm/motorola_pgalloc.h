@@ -34,7 +34,7 @@ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 	free_pointer_table(pte, TABLE_PTE);
 }
 
-static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
+static inline void *pte_alloc_one(struct mm_struct *mm)
 {
 	return get_pointer_table(TABLE_PTE);
 }
