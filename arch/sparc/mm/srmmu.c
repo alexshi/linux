@@ -365,7 +365,7 @@ struct ptdesc *pte_alloc_one(struct mm_struct *mm)
 	return (struct ptdesc *)ptep;
 }
 
-void pte_free(struct mm_struct *mm, pgtable_t ptep)
+void pte_free(struct mm_struct *mm, struct ptdesc *ptep)
 {
 	struct page *page;
 
@@ -375,7 +375,7 @@ void pte_free(struct mm_struct *mm, pgtable_t ptep)
 		pagetable_pte_dtor(page_ptdesc(page));
 	spin_unlock(&mm->page_table_lock);
 
-	srmmu_free_nocache(ptep, SRMMU_PTE_TABLE_SIZE);
+	srmmu_free_nocache((pgtable_t)*ptep, SRMMU_PTE_TABLE_SIZE);
 }
 
 /* context handling - a dynamically sized pool is used */
