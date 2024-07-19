@@ -131,10 +131,10 @@ pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp, pte_t *ptep)
 }
 
 static inline void
-pmd_populate(struct mm_struct *mm, pmd_t *pmdp, pgtable_t ptep)
+pmd_populate(struct mm_struct *mm, pmd_t *pmdp, struct ptdesc *ptep)
 {
 	VM_BUG_ON(mm == &init_mm);
-	__pmd_populate(pmdp, page_to_phys(ptep), PMD_TYPE_TABLE | PMD_TABLE_PXN);
+	__pmd_populate(pmdp, page_to_phys(ptdesc_page(ptep)), PMD_TYPE_TABLE | PMD_TABLE_PXN);
 }
 
 #endif

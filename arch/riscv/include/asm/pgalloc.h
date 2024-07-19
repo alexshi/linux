@@ -33,9 +33,9 @@ static inline void pmd_populate_kernel(struct mm_struct *mm,
 }
 
 static inline void pmd_populate(struct mm_struct *mm,
-	pmd_t *pmd, pgtable_t pte)
+				pmd_t *pmd, struct ptdesc *pte)
 {
-	unsigned long pfn = virt_to_pfn(page_address(pte));
+	unsigned long pfn = virt_to_pfn(page_address(ptdesc_page(pte)));
 
 	set_pmd(pmd, __pmd((pfn << _PAGE_PFN_SHIFT) | _PAGE_TABLE));
 }

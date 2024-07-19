@@ -27,9 +27,9 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
 }
 
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
-				pgtable_t pte)
+				struct ptdesc *pte)
 {
-	set_pmd(pmd, __pmd((unsigned long)page_address(pte)));
+	set_pmd(pmd, __pmd((unsigned long)ptdesc_address(pte)));
 }
 
 #define __pte_free_tlb(tlb, pte, addr)				\

@@ -32,7 +32,7 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
 }
 
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
-				pgtable_t pte_page)
+				struct ptdesc *pte_page)
 {
 	*pmdp = __pmd(__pa(pte_page) | _PMD_PRESENT);
 }

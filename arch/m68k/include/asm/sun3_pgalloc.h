@@ -28,9 +28,9 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd, pte_t *
 	pmd_val(*pmd) = __pa((unsigned long)pte);
 }
 
-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, pgtable_t page)
+static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct ptdesc *ptdesc)
 {
-	pmd_val(*pmd) = __pa((unsigned long)page_address(page));
+	pmd_val(*pmd) = __pa((unsigned long)ptdesc_address(ptdesc));
 }
 
 /*

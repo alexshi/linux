@@ -29,10 +29,10 @@ extern int mem_init_done;
 	set_pmd(pmd, __pmd(_KERNPG_TABLE + __pa(pte)))
 
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
-				struct page *pte)
+				struct ptdesc *pte)
 {
 	set_pmd(pmd, __pmd(_KERNPG_TABLE +
-		     ((unsigned long)page_to_pfn(pte) <<
+		     ((unsigned long)ptdesc_pfn(pte) <<
 		     (unsigned long) PAGE_SHIFT)));
 }
 

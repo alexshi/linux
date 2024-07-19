@@ -757,7 +757,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
 	if (pmd_none(*pmd)) {
 		if (!new_ptep)
 			goto out_unlock;
-		pmd_populate(kvm->mm, pmd, new_ptep);
+		pmd_populate(kvm->mm, pmd, (struct ptdesc *)new_ptep);
 		new_ptep = NULL;
 	}
 	ptep = pte_offset_kernel(pmd, gpa);

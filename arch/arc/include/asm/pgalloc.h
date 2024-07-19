@@ -46,9 +46,9 @@ pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd, pte_t *pte)
 	set_pmd(pmd, __pmd((unsigned long)pte));
 }
 
-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, pgtable_t pte_page)
+static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct ptdesc *pte)
 {
-	set_pmd(pmd, __pmd((unsigned long)page_address(pte_page)));
+	set_pmd(pmd, __pmd((unsigned long)ptdesc_address(pte)));
 }
 
 static inline pgd_t *pgd_alloc(struct mm_struct *mm)

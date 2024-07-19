@@ -769,7 +769,7 @@ static void __collapse_huge_page_copy_failed(pte_t *pte,
 	 * acquiring anon_vma_lock_write is unnecessary.
 	 */
 	pmd_ptl = pmd_lock(vma->vm_mm, pmd);
-	pmd_populate(vma->vm_mm, pmd, pmd_pgtable(orig_pmd));
+	pmd_populate(vma->vm_mm, pmd, (struct ptdesc *)pmd_pgtable(orig_pmd));
 	spin_unlock(pmd_ptl);
 	/*
 	 * Release both raw and compound pages isolated
@@ -1198,7 +1198,7 @@ static int collapse_huge_page(struct mm_struct *mm, unsigned long address,
 		 * hugepmds and never for establishing regular pmds that
 		 * points to regular pagetables. Use pmd_populate for that
 		 */
-		pmd_populate(mm, pmd, pmd_pgtable(_pmd));
+		pmd_populate(mm, pmd, (struct ptdesc *)pmd_pgtable(_pmd));
 		spin_unlock(pmd_ptl);
 		anon_vma_unlock_write(vma->anon_vma);
 		goto out_up_write;

@@ -70,7 +70,7 @@ void pte_free(struct mm_struct *mm, struct ptdesc *ptepage);
 void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable);
 
 #define pmd_populate_kernel(MM, PMD, PTE)	pmd_set(MM, PMD, PTE)
-#define pmd_populate(MM, PMD, PTE)		pmd_set(MM, PMD, PTE)
+#define pmd_populate(MM, PMD, PTE)		pmd_set(MM, PMD, (pte_t *)PTE)
 
 void pgtable_free(void *table, bool is_page);
 
