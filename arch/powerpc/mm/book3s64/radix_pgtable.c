@@ -1492,7 +1492,7 @@ void radix__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 	pmd_huge_pte(mm, pmdp) = pgtable;
 }
 
-pgtable_t radix__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
+struct ptdesc *radix__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
 {
 	pte_t *ptep;
 	pgtable_t pgtable;
@@ -1513,7 +1513,7 @@ pgtable_t radix__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
 	*ptep = __pte(0);
 	ptep++;
 	*ptep = __pte(0);
-	return pgtable;
+	return (struct ptdesc *)pgtable;
 }
 
 pmd_t radix__pmdp_huge_get_and_clear(struct mm_struct *mm,

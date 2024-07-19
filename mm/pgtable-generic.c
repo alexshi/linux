@@ -178,7 +178,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 
 #ifndef __HAVE_ARCH_PGTABLE_WITHDRAW
 /* no "address" argument so destroys page coloring of some arch */
-pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
 {
 	struct ptdesc *ptdesc;
 
@@ -190,7 +190,7 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
 							  struct ptdesc, pt_list);
 	if (pmd_huge_pte(mm, pmdp))
 		list_del(&ptdesc->pt_list);
-	return ptdesc_page(ptdesc);
+	return ptdesc;
 }
 #endif
 

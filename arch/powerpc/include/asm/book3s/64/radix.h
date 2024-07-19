@@ -291,8 +291,8 @@ extern unsigned long radix__pud_hugepage_update(struct mm_struct *mm, unsigned l
 extern pmd_t radix__pmdp_collapse_flush(struct vm_area_struct *vma,
 				  unsigned long address, pmd_t *pmdp);
 extern void radix__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-					pgtable_t pgtable);
-extern pgtable_t radix__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
+					struct ptdesc *ptdesc);
+extern struct ptdesc *radix__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
 extern pmd_t radix__pmdp_huge_get_and_clear(struct mm_struct *mm,
 				      unsigned long addr, pmd_t *pmdp);
 pud_t radix__pudp_huge_get_and_clear(struct mm_struct *mm,

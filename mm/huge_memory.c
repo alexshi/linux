@@ -1827,10 +1827,10 @@ out_unlocked:
 
 static inline void zap_deposited_table(struct mm_struct *mm, pmd_t *pmd)
 {
-	pgtable_t pgtable;
+	struct ptdesc *ptdesc;
 
-	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-	pte_free(mm, page_ptdesc(pgtable));
+	ptdesc = pgtable_trans_huge_withdraw(mm, pmd);
+	pte_free(mm, ptdesc);
 	mm_dec_nr_ptes(mm);
 }
 
@@ -1959,9 +1959,10 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 		VM_BUG_ON(!pmd_none(*new_pmd));
 
 		if (pmd_move_must_withdraw(new_ptl, old_ptl, vma)) {
-			pgtable_t pgtable;
-			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
-			pgtable_trans_huge_deposit(mm, new_pmd, pgtable);
+			struct ptdesc *ptdesc;
+
+			ptdesc = pgtable_trans_huge_withdraw(mm, old_pmd);
+			pgtable_trans_huge_deposit(mm, new_pmd, ptdesc_page(ptdesc));
 		}
 		pmd = move_soft_dirty_pmd(pmd);
 		set_pmd_at(mm, new_addr, new_pmd, pmd);
@@ -2130,7 +2131,7 @@ int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pm
 	struct folio *src_folio;
 	struct anon_vma *src_anon_vma;
 	spinlock_t *src_ptl, *dst_ptl;
-	pgtable_t src_pgtable;
+	struct ptdesc *src_ptdesc;
 	struct mmu_notifier_range range;
 	int err = 0;
 
@@ -2234,8 +2235,8 @@ int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pm
 	}
 	set_pmd_at(mm, dst_addr, dst_pmd, _dst_pmd);
 
-	src_pgtable = pgtable_trans_huge_withdraw(mm, src_pmd);
-	pgtable_trans_huge_deposit(mm, dst_pmd, src_pgtable);
+	src_ptdesc = pgtable_trans_huge_withdraw(mm, src_pmd);
+	pgtable_trans_huge_deposit(mm, dst_pmd, ptdesc_page(src_ptdesc));
 unlock_ptls:
 	double_pt_unlock(src_ptl, dst_ptl);
 	if (src_anon_vma) {
@@ -2347,7 +2348,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
 		unsigned long haddr, pmd_t *pmd)
 {
 	struct mm_struct *mm = vma->vm_mm;
-	pgtable_t pgtable;
+	struct ptdesc *ptdesc;
 	pmd_t _pmd, old_pmd;
 	unsigned long addr;
 	pte_t *pte;
@@ -2363,8 +2364,8 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
 	 */
 	old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
 
-	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-	pmd_populate(mm, &_pmd, pgtable);
+	ptdesc = pgtable_trans_huge_withdraw(mm, pmd);
+	pmd_populate(mm, &_pmd, ptdesc_page(ptdesc));
 
 	pte = pte_offset_map(&_pmd, haddr);
 	VM_BUG_ON(!pte);
@@ -2381,7 +2382,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
 	}
 	pte_unmap(pte - 1);
 	smp_wmb(); /* make pte visible before pmd */
-	pmd_populate(mm, pmd, pgtable);
+	pmd_populate(mm, pmd, ptdesc_page(ptdesc));
 }
 
 static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
@@ -2390,7 +2391,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
 	struct mm_struct *mm = vma->vm_mm;
 	struct folio *folio;
 	struct page *page;
-	pgtable_t pgtable;
+	struct ptdesc *ptdesc;
 	pmd_t old_pmd, _pmd;
 	bool young, write, soft_dirty, pmd_migration = false, uffd_wp = false;
 	bool anon_exclusive = false, dirty = false;
@@ -2535,8 +2536,8 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
 	 * Withdraw the table only after we mark the pmd entry invalid.
 	 * This's critical for some architectures (Power).
 	 */
-	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-	pmd_populate(mm, &_pmd, pgtable);
+	ptdesc = pgtable_trans_huge_withdraw(mm, pmd);
+	pmd_populate(mm, &_pmd, ptdesc_page(ptdesc));
 
 	pte = pte_offset_map(&_pmd, haddr);
 	VM_BUG_ON(!pte);
@@ -2601,7 +2602,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
 		put_page(page);
 
 	smp_wmb(); /* make pte visible before pmd */
-	pmd_populate(mm, pmd, pgtable);
+	pmd_populate(mm, pmd, ptdesc_page(ptdesc));
 }
 
 void split_huge_pmd_locked(struct vm_area_struct *vma, unsigned long address,
