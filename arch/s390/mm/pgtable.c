@@ -563,9 +563,9 @@ EXPORT_SYMBOL(pudp_xchg_direct);
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
-				pgtable_t pgtable)
+				struct ptdesc *ptdesc)
 {
-	struct list_head *lh = (struct list_head *) pgtable;
+	struct list_head *lh = (struct list_head *)ptdesc;
 
 	assert_spin_locked(pmd_lockptr(mm, pmdp));
 
@@ -574,7 +574,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
 		INIT_LIST_HEAD(lh);
 	else
 		list_add(lh, (struct list_head *) pmd_huge_pte(mm, pmdp));
-	pmd_huge_pte(mm, pmdp) = (struct ptdesc *)pgtable;
+	pmd_huge_pte(mm, pmdp) = ptdesc;
 }
 
 struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)

@@ -1365,11 +1365,11 @@ pud_t pudp_huge_get_and_clear_full(struct vm_area_struct *vma,
 
 #define __HAVE_ARCH_PGTABLE_DEPOSIT
 static inline void pgtable_trans_huge_deposit(struct mm_struct *mm,
-					      pmd_t *pmdp, pgtable_t pgtable)
+					      pmd_t *pmdp, struct ptdesc *ptdesc)
 {
 	if (radix_enabled())
-		return radix__pgtable_trans_huge_deposit(mm, pmdp, pgtable);
-	return hash__pgtable_trans_huge_deposit(mm, pmdp, pgtable);
+		return radix__pgtable_trans_huge_deposit(mm, pmdp, ptdesc);
+	return hash__pgtable_trans_huge_deposit(mm, pmdp, ptdesc);
 }
 
 #define __HAVE_ARCH_PGTABLE_WITHDRAW
