@@ -2847,6 +2847,20 @@ static inline bool pagetable_is_reserved(struct ptdesc *pt)
 }
 
 /**
+ * ptdesc_pfn - Return the Page Frame Number of a ptdesc.
+ * @ptdesc: The ptdesc.
+ *
+ * A ptdesc may contain multiple pages.  The pages have consecutive
+ * Page Frame Numbers.
+ *
+ * Return: The Page Frame Number of the first page in the ptdesc.
+ */
+static inline unsigned long ptdesc_pfn(struct ptdesc *ptdesc)
+{
+	return page_to_pfn(ptdesc_page(ptdesc));
+}
+
+/**
  * pagetable_alloc - Allocate pagetables
  * @gfp:    GFP flags
  * @order:  desired pagetable order

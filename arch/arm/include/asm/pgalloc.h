@@ -130,7 +130,7 @@ pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp, pte_t *ptep)
 }
 
 static inline void
-pmd_populate(struct mm_struct *mm, pmd_t *pmdp, pgtable_t ptep)
+pmd_populate(struct mm_struct *mm, pmd_t *pmdp, struct ptdesc *ptep)
 {
 	extern pmdval_t user_pmd_table;
 	pmdval_t prot;
@@ -140,7 +140,7 @@ pmd_populate(struct mm_struct *mm, pmd_t *pmdp, pgtable_t ptep)
 	else
 		prot = _PAGE_USER_TABLE;
 
-	__pmd_populate(pmdp, page_to_phys(ptep), prot);
+	__pmd_populate(pmdp, page_to_phys(ptdesc_page(ptep)), prot);
 }
 
 #endif /* CONFIG_MMU */

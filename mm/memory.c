@@ -437,7 +437,7 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 		 * smp_rmb() barriers in page table walking code.
 		 */
 		smp_wmb(); /* Could be smp_wmb__xxx(before|after)_spin_lock */
-		pmd_populate(mm, pmd, *pte);
+		pmd_populate(mm, pmd, page_ptdesc(*pte));
 		*pte = NULL;
 	}
 	spin_unlock(ptl);

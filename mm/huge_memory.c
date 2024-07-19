@@ -2362,7 +2362,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
 	old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
 
 	ptdesc = pgtable_trans_huge_withdraw(mm, pmd);
-	pmd_populate(mm, &_pmd, ptdesc_page(ptdesc));
+	pmd_populate(mm, &_pmd, ptdesc);
 
 	pte = pte_offset_map(&_pmd, haddr);
 	VM_BUG_ON(!pte);
@@ -2379,7 +2379,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
 	}
 	pte_unmap(pte - 1);
 	smp_wmb(); /* make pte visible before pmd */
-	pmd_populate(mm, pmd, ptdesc_page(ptdesc));
+	pmd_populate(mm, pmd, ptdesc);
 }
 
 static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
@@ -2534,7 +2534,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
 	 * This's critical for some architectures (Power).
 	 */
 	ptdesc = pgtable_trans_huge_withdraw(mm, pmd);
-	pmd_populate(mm, &_pmd, ptdesc_page(ptdesc));
+	pmd_populate(mm, &_pmd, ptdesc);
 
 	pte = pte_offset_map(&_pmd, haddr);
 	VM_BUG_ON(!pte);
@@ -2599,7 +2599,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
 		put_page(page);
 
 	smp_wmb(); /* make pte visible before pmd */
-	pmd_populate(mm, pmd, ptdesc_page(ptdesc));
+	pmd_populate(mm, pmd, ptdesc);
 }
 
 void split_huge_pmd_locked(struct vm_area_struct *vma, unsigned long address,

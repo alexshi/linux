@@ -645,7 +645,7 @@ static void __init pmd_populate_tests(struct pgtable_debug_args *args)
 	 * This entry points to next level page table page.
 	 * Hence this must not qualify as pmd_bad().
 	 */
-	pmd_populate(args->mm, args->pmdp, args->start_ptep);
+	pmd_populate(args->mm, args->pmdp, page_ptdesc(args->start_ptep));
 	pmd = READ_ONCE(*args->pmdp);
 	WARN_ON(pmd_bad(pmd));
 }

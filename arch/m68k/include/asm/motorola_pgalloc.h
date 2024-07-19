@@ -84,9 +84,9 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd, pte_t *
 	pmd_set(pmd, pte);
 }
 
-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, pgtable_t page)
+static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct ptdesc *page)
 {
-	pmd_set(pmd, page);
+	pmd_set(pmd, ptdesc_page(page));
 }
 
 static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
