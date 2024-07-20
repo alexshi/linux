@@ -47,7 +47,7 @@ static inline void pte_free(struct mm_struct *mm, struct ptdesc *ptepage)
 
 /* arch use pte_free_defer() implementation in arch/powerpc/mm/pgtable-frag.c */
 #define pte_free_defer pte_free_defer
-void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable);
+void pte_free_defer(struct mm_struct *mm, struct ptdesc *pgtable);
 
 /*
  * Functions that deal with pagetables that could be at any level of

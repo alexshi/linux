@@ -212,7 +212,7 @@ static void pte_free_now(struct rcu_head *head)
 	pagetable_pte_dtor_free(ptdesc);
 }
 
-void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
+void pte_free_defer(struct mm_struct *mm, struct ptdesc *pgtable)
 {
 	struct ptdesc *ptdesc = virt_to_ptdesc(pgtable);
 

@@ -144,7 +144,7 @@ static inline void pmd_populate(struct mm_struct *mm,
 
 /* arch use pte_free_defer() implementation in arch/s390/mm/pgalloc.c */
 #define pte_free_defer pte_free_defer
-void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable);
+void pte_free_defer(struct mm_struct *mm, struct ptdesc *pgtable);
 
 void vmem_map_init(void);
 void *vmem_crst_alloc(unsigned long val);

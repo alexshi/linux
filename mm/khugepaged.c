@@ -1664,7 +1664,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
 
 	mm_dec_nr_ptes(mm);
 	page_table_check_pte_clear_range(mm, haddr, pgt_pmd);
-	pte_free_defer(mm, pmd_pgtable(pgt_pmd));
+	pte_free_defer(mm, pmd_ptdesc(&pgt_pmd));
 
 maybe_install_pmd:
 	/* step 5: install pmd entry */
@@ -1768,7 +1768,7 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
 		if (!skipped_uffd) {
 			mm_dec_nr_ptes(mm);
 			page_table_check_pte_clear_range(mm, addr, pgt_pmd);
-			pte_free_defer(mm, pmd_pgtable(pgt_pmd));
+			pte_free_defer(mm, pmd_ptdesc(&pgt_pmd));
 		}
 	}
 	i_mmap_unlock_read(mapping);

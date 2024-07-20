@@ -244,10 +244,8 @@ static void pte_free_now(struct rcu_head *head)
 	pte_free(NULL /* mm not passed and not used */, ptdesc);
 }
 
-void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable)
+void pte_free_defer(struct mm_struct *mm, struct ptdesc *ptdesc)
 {
-	struct ptdesc *ptdesc = page_ptdesc(pgtable);
-
 	call_rcu(&ptdesc->pt_rcu_head, pte_free_now);
 }
 #endif /* pte_free_defer */

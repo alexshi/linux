@@ -116,7 +116,7 @@ static inline void pte_unmap(pte_t *pte)
 }
 #endif
 
-void pte_free_defer(struct mm_struct *mm, pgtable_t pgtable);
+void pte_free_defer(struct mm_struct *mm, struct ptdesc *ptdesc);
 
 /* Find an entry in the second-level page table.. */
 #ifndef pmd_offset
