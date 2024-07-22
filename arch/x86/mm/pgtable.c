@@ -50,10 +50,10 @@ static int __init setup_userpte(char *arg)
 }
 early_param("userpte", setup_userpte);
 
-void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+void ___pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *pte)
 {
-	pagetable_pte_dtor(page_ptdesc(pte));
-	paravirt_release_pte(page_to_pfn(pte));
+	pagetable_pte_dtor(pte);
+	paravirt_release_pte(ptdesc_pfn(pte));
 	paravirt_tlb_remove_table(tlb, pte);
 }
 

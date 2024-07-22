@@ -167,7 +167,7 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
 	*pmd = __pmd(__pgtable_ptr_val(pte_page) | PMD_VAL_BITS);
 }
 
-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+static inline void __pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *table,
 				  unsigned long address)
 {
 	pgtable_free_tlb(tlb, table, PTE_INDEX);

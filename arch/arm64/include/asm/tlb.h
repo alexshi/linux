@@ -77,11 +77,9 @@ static inline void tlb_flush(struct mmu_gather *tlb)
 			  last_level, tlb_level);
 }
 
-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte,
+static inline void __pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *ptdesc,
 				  unsigned long addr)
 {
-	struct ptdesc *ptdesc = page_ptdesc(pte);
-
 	pagetable_pte_dtor(ptdesc);
 	tlb_remove_ptdesc(tlb, ptdesc);
 }

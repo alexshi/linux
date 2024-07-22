@@ -3010,7 +3010,7 @@ static inline struct page *pmd_pgtable_page(pmd_t *pmd)
 
 static inline struct ptdesc *pmd_ptdesc(pmd_t *pmd)
 {
-	return page_ptdesc(pmd_pgtable_page(pmd));
+	return page_ptdesc(pmd_page(*pmd));
 }
 
 static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)

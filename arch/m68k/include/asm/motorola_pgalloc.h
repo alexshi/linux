@@ -44,10 +44,10 @@ static inline void pte_free(struct mm_struct *mm, struct ptdesc *ptdesc)
 	free_pointer_table(ptdesc_page(ptdesc), TABLE_PTE);
 }
 
-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pgtable,
+static inline void __pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *ptdesc,
 				  unsigned long address)
 {
-	free_pointer_table(pgtable, TABLE_PTE);
+	free_pointer_table(ptdesc_page(ptdesc), TABLE_PTE);
 }
 
 

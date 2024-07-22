@@ -37,10 +37,8 @@ static inline void __tlb_remove_table(void *_table)
 #include <asm-generic/tlb.h>
 
 static inline void
-__pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte, unsigned long addr)
+__pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *ptdesc, unsigned long addr)
 {
-	struct ptdesc *ptdesc = page_ptdesc(pte);
-
 	pagetable_pte_dtor(ptdesc);
 
 #ifndef CONFIG_ARM_LPAE
