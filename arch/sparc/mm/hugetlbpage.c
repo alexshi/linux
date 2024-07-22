@@ -405,9 +405,9 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 }
 
 static void hugetlb_free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
-			   unsigned long addr)
+				   unsigned long addr)
 {
-	pgtable_t token = pmd_pgtable(*pmd);
+	struct ptdesc *token = virt_to_ptdesc(pmd_pgtable(*pmd));
 
 	pmd_clear(pmd);
 	pte_free_tlb(tlb, token, addr);

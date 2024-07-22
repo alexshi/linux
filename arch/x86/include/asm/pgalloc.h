@@ -53,9 +53,9 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
 
 extern struct ptdesc *pte_alloc_one(struct mm_struct *);
 
-extern void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte);
+extern void ___pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *pte);
 
-static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte,
+static inline void __pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *pte,
 				  unsigned long address)
 {
 	___pte_free_tlb(tlb, pte);

@@ -103,7 +103,7 @@ static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, bool is
 }
 #endif /* !CONFIG_SMP */
 
-static inline void __pte_free_tlb(struct mmu_gather *tlb, pte_t *pte,
+static inline void __pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *pte,
 				  unsigned long address)
 {
 	pgtable_free_tlb(tlb, pte, true);

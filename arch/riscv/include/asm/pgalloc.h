@@ -183,13 +183,11 @@ static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
 
 #endif /* __PAGETABLE_PMD_FOLDED */
 
-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte,
+static inline void __pte_free_tlb(struct mmu_gather *tlb, struct ptdesc *pte,
 				  unsigned long addr)
 {
-	struct ptdesc *ptdesc = page_ptdesc(pte);
-
-	pagetable_pte_dtor(ptdesc);
-	riscv_tlb_remove_ptdesc(tlb, ptdesc);
+	pagetable_pte_dtor(pte);
+	riscv_tlb_remove_ptdesc(tlb, pte);
 }
 #endif /* CONFIG_MMU */
 
