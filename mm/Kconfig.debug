@@ -93,6 +93,10 @@ config SLUB_RCU_DEBUG
 	  catching all the bugs WAY more than performance, you might want to
 	  also turn on CONFIG_RCU_STRICT_GRACE_PERIOD.
 
+	  WARNING:
+	  This is designed as a debugging feature, not a security feature.
+	  Objects are sometimes recycled without RCU delay under memory pressure.
+
 	  If unsure, say N.
 
 config PAGE_OWNER

@@ -1253,8 +1253,7 @@ skip_bug_print:
  * 	A. Free pointer (if we cannot overwrite object on free)
  * 	B. Tracking data for SLAB_STORE_USER
  *	C. Original request size for kmalloc object (SLAB_STORE_USER enabled)
- *	D. RCU head for CONFIG_SLUB_RCU_DEBUG (with padding around it)
- *	E. Padding to reach required alignment boundary or at minimum
+ *	D. Padding to reach required alignment boundary or at minimum
  * 		one word if debugging is on to be able to detect writes
  * 		before the word boundary.
  *
@@ -1279,11 +1278,6 @@ static int check_pad_bytes(struct kmem_cache *s, struct slab *slab, u8 *p)
 		if (s->flags & SLAB_KMALLOC)
 			off += sizeof(unsigned int);
 	}
-
-#ifdef CONFIG_SLUB_RCU_DEBUG
-	if (s->flags & SLAB_TYPESAFE_BY_RCU)
-		off = kasan_align(s->debug_rcu_head_offset + sizeof(struct rcu_head));
-#endif /* CONFIG_SLUB_RCU_DEBUG */
 
 	off += kasan_metadata_size(s, false);
 
@@ -2208,6 +2202,11 @@ static inline void memcg_slab_free_hook(struct kmem_cache *s, struct slab *slab,
 
 #ifdef CONFIG_SLUB_RCU_DEBUG
 static void slab_free_after_rcu_debug(struct rcu_head *rcu_head);
+
+struct rcu_delayed_free {
+	struct rcu_head head;
+	void *object;
+};
 #endif
 
 /*
@@ -2247,12 +2246,23 @@ bool slab_free_hook(struct kmem_cache *s, void *x, bool init,
 
 #ifdef CONFIG_SLUB_RCU_DEBUG
 	if ((s->flags & SLAB_TYPESAFE_BY_RCU) && !after_rcu_delay) {
-		struct rcu_head *rcu_head;
+		struct rcu_delayed_free *delayed_free;
 
-		rcu_head = kasan_reset_tag(x) + s->debug_rcu_head_offset;
-		kasan_unpoison_range(rcu_head, sizeof(*rcu_head));
-		call_rcu(rcu_head, slab_free_after_rcu_debug);
-		return false;
+		delayed_free = kmalloc(sizeof(*delayed_free), GFP_NOWAIT);
+		if (delayed_free) {
+			/*
+			 * Let KASAN track our call stack as a "related work
+			 * creation", just like if the object had been freed
+			 * normally via kfree_rcu().
+			 * We have to do this manually because the rcu_head is
+			 * not located inside the object.
+			 */
+			kasan_record_aux_stack_noalloc(x);
+
+			delayed_free->object = x;
+			call_rcu(&delayed_free->head, slab_free_after_rcu_debug);
+			return false;
+		}
 	}
 #endif /* CONFIG_SLUB_RCU_DEBUG */
 
@@ -2279,7 +2289,7 @@ bool slab_free_hook(struct kmem_cache *s, void *x, bool init,
 		       s->size - inuse - rsize);
 	}
 	/* KASAN might put x into memory quarantine, delaying its reuse. */
-	return !kasan_slab_free(s, x, init);
+	return !kasan_slab_free(s, x, init, after_rcu_delay);
 }
 
 static __fastpath_inline
@@ -4531,9 +4541,11 @@ void slab_free_bulk(struct kmem_cache *s, struct slab *slab, void *head,
 #ifdef CONFIG_SLUB_RCU_DEBUG
 static void slab_free_after_rcu_debug(struct rcu_head *rcu_head)
 {
-	struct slab *slab = virt_to_slab(rcu_head);
+	struct rcu_delayed_free *delayed_free =
+			container_of(rcu_head, struct rcu_delayed_free, head);
+	void *object = delayed_free->object;
+	struct slab *slab = virt_to_slab(object);
 	struct kmem_cache *s;
-	void *object;
 
 	if (WARN_ON(is_kfence_address(rcu_head)))
 		return;
@@ -4544,13 +4556,12 @@ static void slab_free_after_rcu_debug(struct rcu_head *rcu_head)
 	s = slab->slab_cache;
 	if (WARN_ON(!(s->flags & SLAB_TYPESAFE_BY_RCU)))
 		return;
-	object = (void *)rcu_head - s->debug_rcu_head_offset;
-	kasan_poison_range_as_redzone(rcu_head, kasan_align(sizeof(*rcu_head)));
 
 	/* resume freeing */
 	if (!slab_free_hook(s, object, slab_want_init_on_free(s), true))
 		return;
 	do_slab_free(s, slab, object, NULL, 1, _THIS_IP_);
+	kfree(delayed_free);
 }
 #endif /* CONFIG_SLUB_RCU_DEBUG */
 
@@ -5284,16 +5295,6 @@ static int calculate_sizes(struct kmem_cache *s)
 		if (flags & SLAB_KMALLOC)
 			size += sizeof(unsigned int);
 	}
-
-#ifdef CONFIG_SLUB_RCU_DEBUG
-	if (flags & SLAB_TYPESAFE_BY_RCU) {
-		size = kasan_align(size);
-		size = ALIGN(size, __alignof__(struct rcu_head));
-		s->debug_rcu_head_offset = size;
-		size += sizeof(struct rcu_head);
-		size = kasan_align(size);
-	}
-#endif /* CONFIG_SLUB_RCU_DEBUG */
 #endif
 
 	kasan_cache_create(s, &size, &s->flags);
