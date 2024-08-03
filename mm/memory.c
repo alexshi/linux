@@ -4059,8 +4059,8 @@ static inline bool can_swapin_thp(struct vm_fault *vmf, pte_t *ptep, int nr_page
 
 static struct folio *alloc_swap_folio(struct vm_fault *vmf)
 {
-	struct vm_area_struct *vma = vmf->vma;
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+	struct vm_area_struct *vma = vmf->vma;
 	unsigned long orders;
 	struct folio *folio;
 	unsigned long addr;
@@ -4128,7 +4128,8 @@ static struct folio *alloc_swap_folio(struct vm_fault *vmf)
 
 fallback:
 #endif
-	return vma_alloc_folio(GFP_HIGHUSER_MOVABLE, 0, vma, vmf->address, false);
+	return vma_alloc_folio(GFP_HIGHUSER_MOVABLE, 0, vmf->vma,
+			       vmf->address, false);
 }
 
 
