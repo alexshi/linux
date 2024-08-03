@@ -1842,7 +1842,9 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 			if (!pgdat)
 				panic("Cannot allocate %zuB for node %d.\n",
 				       sizeof(*pgdat), nid);
+#ifdef CONFIG_NUMA
 			NODE_DATA(nid) = pgdat;
+#endif
 		}
 
 		pgdat = NODE_DATA(nid);
