@@ -249,3 +249,46 @@ static int __init housekeeping_isolcpus_setup(char *str)
 	return housekeeping_setup(str, flags);
 }
 __setup("isolcpus=", housekeeping_isolcpus_setup);
+
+#ifdef CONFIG_SYSFS
+static ssize_t domain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	const struct cpumask *mask = housekeeping_cpumask(HK_TYPE_DOMAIN);
+	return snprintf(buf, PAGE_SIZE, "%*pbl\n", cpumask_pr_args(mask));
+}
+
+static ssize_t managed_irq_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	const struct cpumask *mask = housekeeping_cpumask(HK_TYPE_MANAGED_IRQ);
+	return snprintf(buf, PAGE_SIZE, "%*pbl\n", cpumask_pr_args(mask));
+}
+
+static ssize_t kernel_noise_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	const struct cpumask *mask = housekeeping_cpumask(HK_TYPE_KERNEL_NOISE);
+	return snprintf(buf, PAGE_SIZE, "%*pbl\n", cpumask_pr_args(mask));
+}
+
+static struct kobj_attribute domain_attr      = __ATTR_RO(domain);
+static struct kobj_attribute managed_irq_attr = __ATTR_RO(managed_irq);
+static struct kobj_attribute kernel_noise_attr  = __ATTR_RO(kernel_noise);
+
+static struct attribute *hk_attrs[] = {
+	&domain_attr.attr,
+	&managed_irq_attr.attr,
+	&kernel_noise_attr.attr,
+	NULL,
+};
+
+static const struct attribute_group hk_attr_group = {
+	.name  = "housekeeping",
+	.attrs = hk_attrs,
+};
+
+static int __init hk_sysfs_init(void)
+{
+	return sysfs_create_group(kernel_kobj, &hk_attr_group);
+}
+subsys_initcall(hk_sysfs_init);
+
+#endif /* CONFIG_SYSFS */
