@@ -1326,6 +1326,16 @@ static void update_unbound_workqueue_cpumask(bool isolcpus_updated)
 	WARN_ON_ONCE(ret < 0);
 }
 
+static void update_housekeeping_cpumask(bool isolcpus_updated)
+{
+	lockdep_assert_cpus_held();
+
+	if (!isolcpus_updated)
+		return;
+
+	reset_housekeeping(isolated_cpus);
+}
+
 /**
  * cpuset_cpu_is_isolated - Check if the given CPU is isolated
  * @cpu: the CPU number to be checked
@@ -1407,6 +1417,7 @@ static int remote_partition_enable(struct cpuset *cs, int new_prs,
 	list_add(&cs->remote_sibling, &remote_children);
 	spin_unlock_irq(&callback_lock);
 	update_unbound_workqueue_cpumask(isolcpus_updated);
+	update_housekeeping_cpumask(isolcpus_updated);
 
 	/*
 	 * Propagate changes in top_cpuset's effective_cpus down the hierarchy.
@@ -1443,6 +1454,7 @@ static void remote_partition_disable(struct cpuset *cs, struct tmpmasks *tmp)
 	reset_partition_data(cs);
 	spin_unlock_irq(&callback_lock);
 	update_unbound_workqueue_cpumask(isolcpus_updated);
+	update_housekeeping_cpumask(isolcpus_updated);
 
 	/*
 	 * Propagate changes in top_cpuset's effective_cpus down the hierarchy.
@@ -1495,6 +1507,7 @@ static void remote_cpus_update(struct cpuset *cs, struct cpumask *newmask,
 		isolcpus_updated += partition_xcpus_del(prs, NULL, tmp->delmask);
 	spin_unlock_irq(&callback_lock);
 	update_unbound_workqueue_cpumask(isolcpus_updated);
+	update_housekeeping_cpumask(isolcpus_updated);
 
 	/*
 	 * Propagate changes in top_cpuset's effective_cpus down the hierarchy.
@@ -1866,6 +1879,7 @@ write_error:
 	}
 	spin_unlock_irq(&callback_lock);
 	update_unbound_workqueue_cpumask(isolcpus_updated);
+	update_housekeeping_cpumask(isolcpus_updated);
 
 	if ((old_prs != new_prs) && (cmd == partcmd_update))
 		update_partition_exclusive(cs, new_prs);
@@ -2873,6 +2887,7 @@ out:
 		partition_xcpus_newstate(old_prs, new_prs, cs->effective_xcpus);
 	spin_unlock_irq(&callback_lock);
 	update_unbound_workqueue_cpumask(new_xcpus_state);
+	update_housekeeping_cpumask(new_xcpus_state);
 
 	/* Force update if switching back to member */
 	update_cpumasks_hier(cs, &tmpmask, !new_prs);

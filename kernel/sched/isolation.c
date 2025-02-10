@@ -17,11 +17,6 @@ enum hk_flags {
 DEFINE_STATIC_KEY_FALSE(housekeeping_overridden);
 EXPORT_SYMBOL_GPL(housekeeping_overridden);
 
-struct housekeeping {
-	cpumask_var_t cpumasks[HK_TYPE_MAX];
-	unsigned long flags;
-};
-
 static struct housekeeping housekeeping;
 
 bool housekeeping_enabled(enum hk_type type)
@@ -100,7 +95,7 @@ void __init housekeeping_init(void)
 	}
 }
 
-static void __init housekeeping_setup_type(enum hk_type type,
+static void housekeeping_setup_type(enum hk_type type,
 					   cpumask_var_t housekeeping_staging)
 {
 	if (!housekeeping.cpumasks[type])
@@ -108,6 +103,39 @@ static void __init housekeeping_setup_type(enum hk_type type,
 
 	cpumask_copy(housekeeping.cpumasks[type], housekeeping_staging);
 }
+
+/*
+ * All cpuset isolated_cpus are not for any type of housekeeping tasks.
+ */
+void reset_housekeeping(cpumask_var_t exclude_cpumask)
+{
+	enum hk_type type;
+	struct housekeeping *hk = &housekeeping;
+	bool hk_need_init = false;
+
+	if (cpumask_empty(exclude_cpumask))
+		return;
+
+	/* cpuset will reset housekeeping staffs */
+	if (!static_branch_unlikely(&housekeeping_overridden)) {
+		hk_need_init = true;
+		hk->flags |= HK_FLAG_DOMAIN | HK_FLAG_MANAGED_IRQ | HK_FLAG_KERNEL_NOISE;
+
+		for_each_set_bit(type, &hk->flags, HK_TYPE_MAX)
+			housekeeping_setup_type(type, (struct cpumask *)cpu_possible_mask);
+	}
+
+	smp_wmb();
+	for_each_set_bit(type, &hk->flags, HK_TYPE_MAX)
+		cpumask_andnot(hk->cpumasks[type], hk->cpumasks[type], exclude_cpumask);
+
+	smp_wmb();
+	if (hk_need_init) {
+		static_branch_enable(&housekeeping_overridden);
+		sched_tick_offload_init();
+	}
+}
+EXPORT_SYMBOL_GPL(reset_housekeeping);
 
 static int __init housekeeping_setup(char *str, unsigned long flags)
 {

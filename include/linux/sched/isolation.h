@@ -24,6 +24,11 @@ enum hk_type {
 	HK_TYPE_KTHREAD = HK_TYPE_KERNEL_NOISE
 };
 
+struct housekeeping {
+	cpumask_var_t cpumasks[HK_TYPE_MAX];
+	unsigned long flags;
+};
+
 #ifdef CONFIG_CPU_ISOLATION
 DECLARE_STATIC_KEY_FALSE(housekeeping_overridden);
 extern int housekeeping_any_cpu(enum hk_type type);
@@ -32,6 +37,7 @@ extern bool housekeeping_enabled(enum hk_type type);
 extern void housekeeping_affine(struct task_struct *t, enum hk_type type);
 extern bool housekeeping_cpu(int cpu, enum hk_type type);
 extern void __init housekeeping_init(void);
+extern void reset_housekeeping(cpumask_var_t mask);
 
 #else
 
@@ -59,6 +65,7 @@ static inline void housekeeping_affine(struct task_struct *t,
 				       enum hk_type type) { }
 
 static inline void housekeeping_init(void) { }
+static inline void reset_housekeeping(cpumask_var_t mask){ }
 #endif /* CONFIG_CPU_ISOLATION */
 
 static inline bool cpu_is_isolated(int cpu)

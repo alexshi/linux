@@ -81,7 +81,7 @@ EXPORT_SYMBOL(alloc_cpumask_var_node);
  * Either returns an allocated (zero-filled) cpumask, or causes the
  * system to panic.
  */
-void __init alloc_bootmem_cpumask_var(cpumask_var_t *mask)
+void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
 {
 	*mask = memblock_alloc_or_panic(cpumask_size(), SMP_CACHE_BYTES);
 }
