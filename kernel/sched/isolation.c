@@ -35,9 +35,15 @@ int housekeeping_any_cpu(enum hk_type type)
 			if (cpu < nr_cpu_ids)
 				return cpu;
 
+			printk(KERN_ERR "current cpu %d, type %d nrcpu_ids %d get numa closer cpu %d cpumask %*pbl \n",
+					smp_processor_id(), type, nr_cpu_ids, cpu, cpumask_pr_args(housekeeping.cpumasks[type]));
+
 			cpu = cpumask_any_and(housekeeping.cpumasks[type], cpu_online_mask);
 			if (likely(cpu < nr_cpu_ids))
 				return cpu;
+
+			printk(KERN_ERR "current cpu %d, type %d nrcpu_ids %d get numa closer cpu %d cpumask %*pbl \n",
+					smp_processor_id(), type, nr_cpu_ids, cpu, cpumask_pr_args(housekeeping.cpumasks[type]));
 			/*
 			 * Unless we have another problem this can only happen
 			 * at boot time before start_secondary() brings the 1st
@@ -86,8 +92,10 @@ void __init housekeeping_init(void)
 
 	static_branch_enable(&housekeeping_overridden);
 
-	if (housekeeping.flags & HK_FLAG_KERNEL_NOISE)
+	if (housekeeping.flags & HK_FLAG_KERNEL_NOISE) {
+		printk(KERN_ERR "alexshi %s\n", __func__);
 		sched_tick_offload_init();
+	}
 
 	for_each_set_bit(type, &housekeeping.flags, HK_TYPE_MAX) {
 		/* We need at least one CPU to handle housekeeping work */
@@ -98,6 +106,8 @@ void __init housekeeping_init(void)
 static void housekeeping_setup_type(enum hk_type type,
 					   cpumask_var_t housekeeping_staging)
 {
+	printk(KERN_ERR "alexshi %s\n", __func__);
+
 	if (!housekeeping.cpumasks[type])
 		alloc_bootmem_cpumask_var(&housekeeping.cpumasks[type]);
 
@@ -116,6 +126,9 @@ void reset_housekeeping(cpumask_var_t exclude_cpumask)
 	if (cpumask_empty(exclude_cpumask))
 		return;
 
+	printk(KERN_ERR "get into %s, cpuset %*pbl\n", __func__, cpumask_pr_args(exclude_cpumask));
+	printk(KERN_ERR "get into %s, domain %*pbl\n", __func__, cpumask_pr_args(hk->cpumasks[0]));
+
 	/* cpuset will reset housekeeping staffs */
 	if (!static_branch_unlikely(&housekeeping_overridden)) {
 		hk_need_init = true;
@@ -126,8 +139,10 @@ void reset_housekeeping(cpumask_var_t exclude_cpumask)
 	}
 
 	smp_wmb();
-	for_each_set_bit(type, &hk->flags, HK_TYPE_MAX)
+	for_each_set_bit(type, &hk->flags, HK_TYPE_MAX) {
 		cpumask_andnot(hk->cpumasks[type], hk->cpumasks[type], exclude_cpumask);
+		printk(KERN_ERR "changed hk cpumask %s, type %d, %*pbl\n", __func__, type, cpumask_pr_args(hk->cpumasks[type]));
+	}
 
 	smp_wmb();
 	if (hk_need_init) {
@@ -174,6 +189,7 @@ static int __init housekeeping_setup(char *str, unsigned long flags)
 	if (cpumask_empty(non_housekeeping_mask))
 		goto free_housekeeping_staging;
 
+	printk(KERN_ERR "alexshi %s\n", __func__);
 	if (!housekeeping.flags) {
 		/* First setup call ("nohz_full=" or "isolcpus=") */
 		enum hk_type type;

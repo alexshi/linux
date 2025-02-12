@@ -5782,6 +5782,7 @@ static void sched_tick_start(int cpu)
 	if (housekeeping_cpu(cpu, HK_TYPE_KERNEL_NOISE))
 		return;
 
+	printk(KERN_ERR "alexshi %s\n", __func__);
 	WARN_ON_ONCE(!tick_work_cpu);
 
 	twork = per_cpu_ptr(tick_work_cpu, cpu);
@@ -5817,6 +5818,7 @@ int sched_tick_offload_init(void)
 {
 	tick_work_cpu = alloc_percpu(struct tick_work);
 	BUG_ON(!tick_work_cpu);
+	printk(KERN_ERR "alexshi %s\n", __func__);
 	return 0;
 }
 
