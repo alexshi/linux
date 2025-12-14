@@ -21,7 +21,7 @@ static inline void pmd_populate_kernel(struct mm_struct *mm,
 
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, pgtable_t pte)
 {
-	set_pmd(pmd, __pmd((unsigned long)page_address(pte)));
+	set_pmd(pmd, __pmd((unsigned long)ptdesc_address(pte)));
 }
 
 #ifndef __PAGETABLE_PMD_FOLDED
@@ -56,7 +56,7 @@ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
 }
 
 #define __pte_free_tlb(tlb, pte, address)	\
-	tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+	tlb_remove_ptdesc((tlb), pte)
 
 #ifndef __PAGETABLE_PMD_FOLDED
 

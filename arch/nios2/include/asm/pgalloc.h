@@ -23,12 +23,12 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
 	pgtable_t pte)
 {
-	set_pmd(pmd, __pmd((unsigned long)page_address(pte)));
+	set_pmd(pmd, __pmd((unsigned long)ptdesc_address(pte)));
 }
 
 extern pgd_t *pgd_alloc(struct mm_struct *mm);
 
 #define __pte_free_tlb(tlb, pte, addr)	\
-	tlb_remove_ptdesc((tlb), page_ptdesc(pte))
+	tlb_remove_ptdesc((tlb), pte)
 
 #endif /* _ASM_NIOS2_PGALLOC_H */
