@@ -1265,7 +1265,7 @@ static struct folio *vma_alloc_anon_folio_pmd(struct vm_area_struct *vma,
 		return NULL;
 	}
 
-	VM_BUG_ON_FOLIO(!folio_test_large(folio), folio);
+	VM_BUG_ON_FOLIO(folio_order(folio) != order, folio);
 	if (mem_cgroup_charge(folio, vma->vm_mm, gfp)) {
 		folio_put(folio);
 		count_vm_event(THP_FAULT_FALLBACK);
