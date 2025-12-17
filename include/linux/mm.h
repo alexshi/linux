@@ -3464,6 +3464,22 @@ static inline spinlock_t *pud_lock(struct mm_struct *mm, pud_t *pud)
 	return ptl;
 }
 
+static inline spinlock_t *thp_pxd_lock(struct mm_struct *mm, struct vm_fault *vmf,
+				       const int order)
+{
+	spinlock_t *ptl;
+
+	if (order == PMD_ORDER) {
+		ptl = pmd_lockptr(mm, vmf->pmd);
+		spin_lock(ptl);
+	} else {
+		ptl = pud_lockptr(mm, vmf->pud);
+		spin_lock(ptl);
+	}
+
+	return ptl;
+}
+
 static inline void pagetable_pud_ctor(struct ptdesc *ptdesc)
 {
 	__pagetable_ctor(ptdesc);

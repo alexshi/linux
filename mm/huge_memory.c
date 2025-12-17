@@ -1250,11 +1250,10 @@ unsigned long thp_get_unmapped_area(struct file *filp, unsigned long addr,
 }
 EXPORT_SYMBOL_GPL(thp_get_unmapped_area);
 
-static struct folio *vma_alloc_anon_folio_pmd(struct vm_area_struct *vma,
-		unsigned long haddr)
+static struct folio *vma_alloc_anon_folio(struct vm_area_struct *vma,
+					  unsigned long haddr, const int order)
 {
 	gfp_t gfp = vma_thp_gfp_mask(vma);
-	const int order = HPAGE_PMD_ORDER;
 	struct folio *folio;
 
 	folio = vma_alloc_folio(gfp, order, vma, haddr);
@@ -1317,15 +1316,25 @@ static void map_anon_folio_pmd_pf(struct folio *folio, pmd_t *pmd,
 	count_memcg_event_mm(vma->vm_mm, THP_FAULT_ALLOC);
 }
 
-static vm_fault_t __do_huge_pmd_anonymous_page(struct vm_fault *vmf)
+static vm_fault_t __do_huge_pxd_anonymous_page(struct vm_fault *vmf, const int order)
 {
-	unsigned long haddr = vmf->address & HPAGE_PMD_MASK;
+	unsigned long haddr;
 	struct vm_area_struct *vma = vmf->vma;
 	struct folio *folio;
 	pgtable_t pgtable;
 	vm_fault_t ret = 0;
+	void *pxd;
+	bool usepmd = order == HPAGE_PMD_ORDER;
 
-	folio = vma_alloc_anon_folio_pmd(vma, haddr);
+	if (usepmd) {
+		haddr = vmf->address & HPAGE_PMD_MASK;
+		pxd = vmf->pmd;
+	} else {
+		haddr = vmf->address & HPAGE_PUD_MASK;
+		pxd = vmf->pud;
+	}
+
+	folio = vma_alloc_anon_folio(vma, haddr, order);
 	if (unlikely(!folio))
 		return VM_FAULT_FALLBACK;
 
@@ -1335,8 +1344,8 @@ static vm_fault_t __do_huge_pmd_anonymous_page(struct vm_fault *vmf)
 		goto release;
 	}
 
-	vmf->ptl = pmd_lock(vma->vm_mm, vmf->pmd);
-	if (unlikely(!pmd_none(*vmf->pmd))) {
+	vmf->ptl = thp_pxd_lock(vma->vm_mm, vmf, order);
+	if (unlikely((usepmd) ? !pmd_none(*vmf->pmd) : !pud_none(*vmf->pud))) {
 		goto unlock_release;
 	} else {
 		ret = check_stable_address_space(vma->vm_mm);
@@ -1352,8 +1361,8 @@ static vm_fault_t __do_huge_pmd_anonymous_page(struct vm_fault *vmf)
 			VM_BUG_ON(ret & VM_FAULT_FALLBACK);
 			return ret;
 		}
-		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, pgtable);
-		map_anon_folio_pmd_pf(folio, vmf->pmd, vma, haddr);
+		pgtable_trans_huge_deposit(vma->vm_mm, pxd, pgtable);
+		map_anon_folio_pmd_pf(folio, pxd, vma, haddr);
 		mm_inc_nr_ptes(vma->vm_mm);
 		spin_unlock(vmf->ptl);
 	}
@@ -1455,13 +1464,19 @@ static void set_huge_zero_folio(pgtable_t pgtable, struct mm_struct *mm,
 	mm_inc_nr_ptes(mm);
 }
 
-vm_fault_t do_huge_pmd_anonymous_page(struct vm_fault *vmf)
+vm_fault_t do_huge_pxd_anonymous_page(struct vm_fault *vmf, const int order)
 {
 	struct vm_area_struct *vma = vmf->vma;
-	unsigned long haddr = vmf->address & HPAGE_PMD_MASK;
+	unsigned long haddr;
 	vm_fault_t ret;
 
-	if (!thp_vma_suitable_order(vma, haddr, PMD_ORDER))
+	VM_BUG_ON(order != HPAGE_PMD_ORDER && order != HPAGE_PUD_ORDER);
+	if (order == HPAGE_PMD_ORDER)
+		haddr = vmf->address & HPAGE_PMD_MASK;
+	else
+		haddr = vmf->address & HPAGE_PUD_MASK;
+
+	if (!thp_vma_suitable_order(vma, haddr, order))
 		return VM_FAULT_FALLBACK;
 	ret = vmf_anon_prepare(vmf);
 	if (ret)
@@ -1509,7 +1524,7 @@ vm_fault_t do_huge_pmd_anonymous_page(struct vm_fault *vmf)
 		return ret;
 	}
 
-	return __do_huge_pmd_anonymous_page(vmf);
+	return __do_huge_pxd_anonymous_page(vmf, order);
 }
 
 struct folio_or_pfn {
@@ -2030,7 +2045,7 @@ static vm_fault_t do_huge_zero_wp_pmd(struct vm_fault *vmf)
 	struct folio *folio;
 	vm_fault_t ret = 0;
 
-	folio = vma_alloc_anon_folio_pmd(vma, haddr);
+	folio = vma_alloc_anon_folio(vma, haddr, HPAGE_PMD_ORDER);
 	if (unlikely(!folio))
 		return VM_FAULT_FALLBACK;
 
