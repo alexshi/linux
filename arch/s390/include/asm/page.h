@@ -80,7 +80,8 @@ static inline void copy_page(void *to, void *from)
 typedef struct { unsigned long pgprot; } pgprot_t;
 typedef struct { unsigned long pgste; } pgste_t;
 typedef struct { unsigned long pte; } pte_t;
-typedef struct { unsigned long entry; } pmd_t;
+typedef struct { unsigned long entry; } pmld_t;
+typedef pmld_t pmd_t;
 typedef struct { unsigned long entry; } pud_t;
 typedef struct { unsigned long entry; } p4d_t;
 typedef struct { unsigned long pgd; } pgd_t;

@@ -339,7 +339,7 @@ static inline pgdval_t pgd_flags(pgd_t pgd)
 }
 
 #if CONFIG_PGTABLE_LEVELS > 4
-typedef struct { pmdval_t entry; } p4d_t;
+typedef pmld_t p4d_t;
 
 static inline p4d_t native_make_p4d(pmdval_t val)
 {
@@ -365,7 +365,7 @@ static inline pmdval_t native_p4d_val(p4d_t p4d)
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 3
-typedef struct { pmdval_t entry; } pud_t;
+typedef pmld_t pud_t;
 
 static inline pud_t native_make_pud(pmdval_t val)
 {

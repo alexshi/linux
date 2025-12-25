@@ -226,7 +226,8 @@ static inline void set_p4d(p4d_t *p4d, p4d_t p4dval)
  * For 3-level pagetables we defines these ourselves, for 2-level the
  * definitions are supplied by <asm-generic/pgtable-nopmd.h>.
  */
-typedef struct { unsigned long entry; } pmd_t;
+typedef struct { unsigned long entry; } pmld_t;
+typedef pmld_t pmd_t;
 #define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) } )
 

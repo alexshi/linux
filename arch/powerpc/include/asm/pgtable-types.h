@@ -32,7 +32,8 @@ static inline pte_basic_t pte_val(pte_t x)
 
 /* PMD level */
 #ifdef CONFIG_PPC64
-typedef struct { unsigned long entry; } pmd_t;
+typedef struct { unsigned long entry; } pmld_t;
+typedef pmld_t pmd_t;
 #define __pmd(x)	((pmd_t) { (x) })
 static inline unsigned long pmd_val(pmd_t x)
 {

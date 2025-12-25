@@ -34,7 +34,8 @@ typedef struct { unsigned long pgd; } pgd_t;
 
 #if CONFIG_PGTABLE_LEVELS > 2
 
-typedef struct { unsigned long entry; } pmd_t;
+typedef struct { unsigned long entry; } pmld_t;
+typedef pmld_t pmd_t;
 #define pmd_val(x)	((x).entry)
 #define __pmd(x) ((pmd_t) { (x) } )
 

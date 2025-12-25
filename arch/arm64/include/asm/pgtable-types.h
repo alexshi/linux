@@ -31,7 +31,8 @@ typedef struct { pteval_t pte; } pte_t;
 #define __pte(x)	((pte_t) { (x) } )
 
 #if CONFIG_PGTABLE_LEVELS > 2
-typedef struct { pmdval_t entry; } pmd_t;
+typedef struct { pmdval_t entry; } pmld_t;
+typedef pmld_t pmd_t;
 #define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) } )
 #endif

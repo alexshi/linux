@@ -19,7 +19,8 @@ typedef u32 pmdval_t;
  * These are used to make use of C type-checking..
  */
 typedef struct { pteval_t pte; } pte_t;
-typedef struct { pmdval_t entry; } pmd_t;
+typedef struct { pmdval_t entry; } pmld_t;
+typedef pmld_t pmd_t;
 typedef struct { pmdval_t pgd[2]; } pgd_t;
 typedef struct { pteval_t pgprot; } pgprot_t;
 

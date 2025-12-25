@@ -187,7 +187,8 @@ static inline void p4d_clear(p4d_t *p4dp)
 
 #ifndef __PAGETABLE_PMD_FOLDED
 
-typedef struct { unsigned long entry; } pmd_t;
+typedef struct { unsigned long entry; } pmld_t;
+typedef pmld_t pmd_t;
 #define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) })
 

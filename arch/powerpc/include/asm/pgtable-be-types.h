@@ -20,7 +20,8 @@ static inline __be64 pte_raw(pte_t x)
 
 /* PMD level */
 #ifdef CONFIG_PPC64
-typedef struct { __be64 entry; } pmd_t;
+typedef struct { __be64 entry; } pmld_t;
+typedef pmld_t pmd_t;
 #define __pmd(x)	((pmd_t) { cpu_to_be64(x) })
 #define __pmd_raw(x)	((pmd_t) { (x) })
 static inline unsigned long pmd_val(pmd_t x)

@@ -19,7 +19,8 @@ typedef unsigned long	pgdval_t;
 typedef unsigned long	pgprotval_t;
 
 typedef struct { pteval_t pte; } pte_t;
-typedef struct { pmdval_t entry; } pmd_t;
+typedef struct { pmdval_t entry; } pmld_t;
+typedef pmld_t pmd_t;
 
 extern unsigned int __pgtable_l5_enabled;
 
