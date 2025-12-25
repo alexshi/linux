@@ -218,7 +218,7 @@ TRACE_EVENT(xen_mmu_set_pud,
 		      (int)sizeof(pmdval_t) * 2, (unsigned long long)__entry->pudval)
 	);
 
-TRACE_DEFINE_SIZEOF(p4dval_t);
+TRACE_DEFINE_SIZEOF(pmdval_t);
 
 TRACE_EVENT(xen_mmu_set_p4d,
 	    TP_PROTO(p4d_t *p4dp, p4d_t *user_p4dp, p4d_t p4dval),
@@ -226,15 +226,15 @@ TRACE_EVENT(xen_mmu_set_p4d,
 	    TP_STRUCT__entry(
 		    __field(p4d_t *, p4dp)
 		    __field(p4d_t *, user_p4dp)
-		    __field(p4dval_t, p4dval)
+		    __field(pmdval_t, p4dval)
 		    ),
 	    TP_fast_assign(__entry->p4dp = p4dp;
 			   __entry->user_p4dp = user_p4dp;
 			   __entry->p4dval = p4d_val(p4dval)),
 	    TP_printk("p4dp %p user_p4dp %p p4dval %0*llx (raw %0*llx)",
 		      __entry->p4dp, __entry->user_p4dp,
-		      (int)sizeof(p4dval_t) * 2, (unsigned long long)pgd_val(native_make_pgd(__entry->p4dval)),
-		      (int)sizeof(p4dval_t) * 2, (unsigned long long)__entry->p4dval)
+		      (int)sizeof(pmdval_t) * 2, (unsigned long long)pgd_val(native_make_pgd(__entry->p4dval)),
+		      (int)sizeof(pmdval_t) * 2, (unsigned long long)__entry->p4dval)
 	);
 #else
 

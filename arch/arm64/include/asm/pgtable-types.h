@@ -21,7 +21,6 @@ typedef u64 ptdesc_t;
 
 typedef ptdesc_t pteval_t;
 typedef ptdesc_t pmdval_t;
-typedef ptdesc_t p4dval_t;
 typedef ptdesc_t pgdval_t;
 
 /*
@@ -44,7 +43,7 @@ typedef struct { pmdval_t pud; } pud_t;
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 4
-typedef struct { p4dval_t p4d; } p4d_t;
+typedef struct { pmdval_t p4d; } p4d_t;
 #define p4d_val(x)	((x).p4d)
 #define __p4d(x)	((p4d_t) { (x) } )
 #endif

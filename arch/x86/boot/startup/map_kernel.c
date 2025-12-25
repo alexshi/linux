@@ -93,7 +93,7 @@ unsigned long __init __startup_64(unsigned long p2v_offset,
 	unsigned long pgtable_flags;
 	unsigned long load_delta;
 	pgdval_t *pgd;
-	p4dval_t *p4d;
+	pmdval_t *p4d;
 	pmdval_t *pud;
 	pmdval_t *pmd, pmd_entry;
 	bool la57;
@@ -127,7 +127,7 @@ unsigned long __init __startup_64(unsigned long p2v_offset,
 	pgd[pgd_index(__START_KERNEL_map)] += load_delta;
 
 	if (la57) {
-		p4d = (p4dval_t *)rip_rel_ptr(level4_kernel_pgt);
+		p4d = (pmdval_t *)rip_rel_ptr(level4_kernel_pgt);
 		p4d[MAX_PTRS_PER_P4D - 1] += load_delta;
 
 		pgd[pgd_index(__START_KERNEL_map)] = (pgdval_t)p4d | _PAGE_TABLE;

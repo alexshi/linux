@@ -80,7 +80,7 @@ bool __init __early_make_pgtable(unsigned long address, pmdval_t pmd)
 {
 	unsigned long physaddr = address - __PAGE_OFFSET;
 	pgdval_t pgd, *pgd_p;
-	p4dval_t p4d, *p4d_p;
+	pmdval_t p4d, *p4d_p;
 	pmdval_t pud, *pud_p;
 	pmdval_t *pmd_p;
 
@@ -100,14 +100,14 @@ again:
 	if (!pgtable_l5_enabled())
 		p4d_p = pgd_p;
 	else if (pgd)
-		p4d_p = (p4dval_t *)((pgd & PTE_PFN_MASK) + __START_KERNEL_map - phys_base);
+		p4d_p = (pmdval_t *)((pgd & PTE_PFN_MASK) + __START_KERNEL_map - phys_base);
 	else {
 		if (next_early_pgt >= EARLY_DYNAMIC_PAGE_TABLES) {
 			reset_early_page_tables();
 			goto again;
 		}
 
-		p4d_p = (p4dval_t *)early_dynamic_pgts[next_early_pgt++];
+		p4d_p = (pmdval_t *)early_dynamic_pgts[next_early_pgt++];
 		memset(p4d_p, 0, sizeof(*p4d_p) * PTRS_PER_P4D);
 		*pgd_p = (pgdval_t)p4d_p - __START_KERNEL_map + phys_base + _KERNPG_TABLE;
 	}
@@ -124,7 +124,7 @@ again:
 
 		pud_p = (pmdval_t *)early_dynamic_pgts[next_early_pgt++];
 		memset(pud_p, 0, sizeof(*pud_p) * PTRS_PER_PUD);
-		*p4d_p = (p4dval_t)pud_p - __START_KERNEL_map + phys_base + _KERNPG_TABLE;
+		*p4d_p = (pmdval_t)pud_p - __START_KERNEL_map + phys_base + _KERNPG_TABLE;
 	}
 	pud_p += pud_index(address);
 	pud = *pud_p;

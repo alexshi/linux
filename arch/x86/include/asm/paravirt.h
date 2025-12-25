@@ -458,22 +458,22 @@ static inline void pud_clear(pud_t *pudp)
 
 static inline void set_p4d(p4d_t *p4dp, p4d_t p4d)
 {
-	p4dval_t val = native_p4d_val(p4d);
+	pmdval_t val = native_p4d_val(p4d);
 
 	PVOP_VCALL2(mmu.set_p4d, p4dp, val);
 }
 
-static inline p4d_t __p4d(p4dval_t val)
+static inline p4d_t __p4d(pmdval_t val)
 {
-	p4dval_t ret = PVOP_ALT_CALLEE1(p4dval_t, mmu.make_p4d, val,
+	pmdval_t ret = PVOP_ALT_CALLEE1(pmdval_t, mmu.make_p4d, val,
 					"mov %%rdi, %%rax", ALT_NOT_XEN);
 
 	return (p4d_t) { ret };
 }
 
-static inline p4dval_t p4d_val(p4d_t p4d)
+static inline pmdval_t p4d_val(p4d_t p4d)
 {
-	return PVOP_ALT_CALLEE1(p4dval_t, mmu.p4d_val, p4d.p4d,
+	return PVOP_ALT_CALLEE1(pmdval_t, mmu.p4d_val, p4d.p4d,
 				"mov %%rdi, %%rax", ALT_NOT_XEN);
 }
 

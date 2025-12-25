@@ -339,14 +339,14 @@ static inline pgdval_t pgd_flags(pgd_t pgd)
 }
 
 #if CONFIG_PGTABLE_LEVELS > 4
-typedef struct { p4dval_t p4d; } p4d_t;
+typedef struct { pmdval_t p4d; } p4d_t;
 
 static inline p4d_t native_make_p4d(pmdval_t val)
 {
 	return (p4d_t) { val };
 }
 
-static inline p4dval_t native_p4d_val(p4d_t p4d)
+static inline pmdval_t native_p4d_val(p4d_t p4d)
 {
 	return p4d.p4d;
 }
@@ -358,7 +358,7 @@ static inline p4d_t native_make_p4d(pmdval_t val)
 	return (p4d_t) { .pgd = native_make_pgd((pgdval_t)val) };
 }
 
-static inline p4dval_t native_p4d_val(p4d_t p4d)
+static inline pmdval_t native_p4d_val(p4d_t p4d)
 {
 	return native_pgd_val(p4d.pgd);
 }
@@ -414,18 +414,18 @@ static inline pmdval_t native_pmd_val(pmd_t pmd)
 }
 #endif
 
-static inline p4dval_t p4d_pfn_mask(p4d_t p4d)
+static inline pmdval_t p4d_pfn_mask(p4d_t p4d)
 {
 	/* No 512 GiB huge pages yet */
 	return PTE_PFN_MASK;
 }
 
-static inline p4dval_t p4d_flags_mask(p4d_t p4d)
+static inline pmdval_t p4d_flags_mask(p4d_t p4d)
 {
 	return ~p4d_pfn_mask(p4d);
 }
 
-static inline p4dval_t p4d_flags(p4d_t p4d)
+static inline pmdval_t p4d_flags(p4d_t p4d)
 {
 	return native_p4d_val(p4d) & p4d_flags_mask(p4d);
 }

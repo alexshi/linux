@@ -42,7 +42,7 @@ static inline void __pud_populate(pud_t *pudp, phys_addr_t pmdp, pmdval_t prot)
 
 #if CONFIG_PGTABLE_LEVELS > 3
 
-static inline void __p4d_populate(p4d_t *p4dp, phys_addr_t pudp, p4dval_t prot)
+static inline void __p4d_populate(p4d_t *p4dp, phys_addr_t pudp, pmdval_t prot)
 {
 	if (pgtable_l4_enabled())
 		set_p4d(p4dp, __p4d(__phys_to_p4d_val(pudp) | prot));
@@ -50,7 +50,7 @@ static inline void __p4d_populate(p4d_t *p4dp, phys_addr_t pudp, p4dval_t prot)
 
 static inline void p4d_populate(struct mm_struct *mm, p4d_t *p4dp, pud_t *pudp)
 {
-	p4dval_t p4dval = P4D_TYPE_TABLE | P4D_TABLE_AF;
+	pmdval_t p4dval = P4D_TYPE_TABLE | P4D_TABLE_AF;
 
 	p4dval |= (mm == &init_mm) ? P4D_TABLE_UXN : P4D_TABLE_PXN;
 	__p4d_populate(p4dp, __pa(pudp), p4dval);
@@ -63,7 +63,7 @@ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
 	__pud_free(mm, pud);
 }
 #else
-static inline void __p4d_populate(p4d_t *p4dp, phys_addr_t pudp, p4dval_t prot)
+static inline void __p4d_populate(p4d_t *p4dp, phys_addr_t pudp, pmdval_t prot)
 {
 	BUILD_BUG();
 }
