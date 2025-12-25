@@ -681,8 +681,8 @@ static inline pud_t pud_mkhuge(pud_t pud)
 	 * and in that case it needs to remain present-invalid on
 	 * exit. So ensure the VALID bit does not get modified.
 	 */
-	pudval_t mask = PUD_TYPE_MASK & ~PTE_VALID;
-	pudval_t val = PUD_TYPE_SECT & ~PTE_VALID;
+	pmdval_t mask = PUD_TYPE_MASK & ~PTE_VALID;
+	pmdval_t val = PUD_TYPE_SECT & ~PTE_VALID;
 
 	return __pud((pud_val(pud) & ~mask) | val);
 }

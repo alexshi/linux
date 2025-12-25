@@ -435,19 +435,19 @@ static inline void set_pud(pud_t *pudp, pud_t pud)
 	PVOP_VCALL2(mmu.set_pud, pudp, native_pud_val(pud));
 }
 
-static inline pud_t __pud(pudval_t val)
+static inline pud_t __pud(pmdval_t val)
 {
-	pudval_t ret;
+	pmdval_t ret;
 
-	ret = PVOP_ALT_CALLEE1(pudval_t, mmu.make_pud, val,
+	ret = PVOP_ALT_CALLEE1(pmdval_t, mmu.make_pud, val,
 			       "mov %%rdi, %%rax", ALT_NOT_XEN);
 
 	return (pud_t) { ret };
 }
 
-static inline pudval_t pud_val(pud_t pud)
+static inline pmdval_t pud_val(pud_t pud)
 {
-	return PVOP_ALT_CALLEE1(pudval_t, mmu.pud_val, pud.pud,
+	return PVOP_ALT_CALLEE1(pmdval_t, mmu.pud_val, pud.pud,
 				"mov %%rdi, %%rax", ALT_NOT_XEN);
 }
 

@@ -67,7 +67,7 @@ static inline pmd_t native_pmdp_get_and_clear(pmd_t *xp)
 #ifdef CONFIG_SMP
 static inline pud_t native_pudp_get_and_clear(pud_t *xp)
 {
-	return __pud(xchg((pudval_t *)xp, 0));
+	return __pud(xchg((pmdval_t *)xp, 0));
 }
 #else
 #define native_pudp_get_and_clear(xp) native_local_pudp_get_and_clear(xp)

@@ -91,12 +91,12 @@
 pteval_t xen_pte_val(pte_t pte);
 pgdval_t xen_pgd_val(pgd_t pgd);
 pmdval_t xen_pmd_val(pmd_t pmd);
-pudval_t xen_pud_val(pud_t pud);
+pmdval_t xen_pud_val(pud_t pud);
 p4dval_t xen_p4d_val(p4d_t p4d);
 pte_t xen_make_pte(pteval_t pte);
 pgd_t xen_make_pgd(pgdval_t pgd);
 pmd_t xen_make_pmd(pmdval_t pmd);
-pud_t xen_make_pud(pudval_t pud);
+pud_t xen_make_pud(pmdval_t pud);
 p4d_t xen_make_p4d(p4dval_t p4d);
 pte_t xen_make_pte_init(pteval_t pte);
 
@@ -489,13 +489,13 @@ __visible pmd_t xen_make_pmd(pmdval_t pmd)
 }
 PV_CALLEE_SAVE_REGS_THUNK(xen_make_pmd);
 
-__visible pudval_t xen_pud_val(pud_t pud)
+__visible pmdval_t xen_pud_val(pud_t pud)
 {
 	return pte_mfn_to_pfn(pud.pud);
 }
 PV_CALLEE_SAVE_REGS_THUNK(xen_pud_val);
 
-__visible pud_t xen_make_pud(pudval_t pud)
+__visible pud_t xen_make_pud(pmdval_t pud)
 {
 	pud = pte_pfn_to_mfn(pud);
 

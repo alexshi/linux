@@ -201,21 +201,21 @@ TRACE_EVENT(xen_mmu_pmd_clear,
 
 #if CONFIG_PGTABLE_LEVELS >= 4
 
-TRACE_DEFINE_SIZEOF(pudval_t);
+TRACE_DEFINE_SIZEOF(pmdval_t);
 
 TRACE_EVENT(xen_mmu_set_pud,
 	    TP_PROTO(pud_t *pudp, pud_t pudval),
 	    TP_ARGS(pudp, pudval),
 	    TP_STRUCT__entry(
 		    __field(pud_t *, pudp)
-		    __field(pudval_t, pudval)
+		    __field(pmdval_t, pudval)
 		    ),
 	    TP_fast_assign(__entry->pudp = pudp;
 			   __entry->pudval = native_pud_val(pudval)),
 	    TP_printk("pudp %p pudval %0*llx (raw %0*llx)",
 		      __entry->pudp,
-		      (int)sizeof(pudval_t) * 2, (unsigned long long)pud_val(native_make_pud(__entry->pudval)),
-		      (int)sizeof(pudval_t) * 2, (unsigned long long)__entry->pudval)
+		      (int)sizeof(pmdval_t) * 2, (unsigned long long)pud_val(native_make_pud(__entry->pudval)),
+		      (int)sizeof(pmdval_t) * 2, (unsigned long long)__entry->pudval)
 	);
 
 TRACE_DEFINE_SIZEOF(p4dval_t);
@@ -243,14 +243,14 @@ TRACE_EVENT(xen_mmu_set_pud,
 	    TP_ARGS(pudp, pudval),
 	    TP_STRUCT__entry(
 		    __field(pud_t *, pudp)
-		    __field(pudval_t, pudval)
+		    __field(pmdval_t, pudval)
 		    ),
 	    TP_fast_assign(__entry->pudp = pudp;
 			   __entry->pudval = native_pud_val(pudval)),
 	    TP_printk("pudp %p pudval %0*llx (raw %0*llx)",
 		      __entry->pudp,
-		      (int)sizeof(pudval_t) * 2, (unsigned long long)pgd_val(native_make_pgd(__entry->pudval)),
-		      (int)sizeof(pudval_t) * 2, (unsigned long long)__entry->pudval)
+		      (int)sizeof(pmdval_t) * 2, (unsigned long long)pgd_val(native_make_pgd(__entry->pudval)),
+		      (int)sizeof(pmdval_t) * 2, (unsigned long long)__entry->pudval)
 	);
 
 #endif

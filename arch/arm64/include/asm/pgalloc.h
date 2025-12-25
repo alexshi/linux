@@ -21,20 +21,20 @@
 
 #if CONFIG_PGTABLE_LEVELS > 2
 
-static inline void __pud_populate(pud_t *pudp, phys_addr_t pmdp, pudval_t prot)
+static inline void __pud_populate(pud_t *pudp, phys_addr_t pmdp, pmdval_t prot)
 {
 	set_pud(pudp, __pud(__phys_to_pud_val(pmdp) | prot));
 }
 
 static inline void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmdp)
 {
-	pudval_t pudval = PUD_TYPE_TABLE | PUD_TABLE_AF;
+	pmdval_t pudval = PUD_TYPE_TABLE | PUD_TABLE_AF;
 
 	pudval |= (mm == &init_mm) ? PUD_TABLE_UXN : PUD_TABLE_PXN;
 	__pud_populate(pudp, __pa(pmdp), pudval);
 }
 #else
-static inline void __pud_populate(pud_t *pudp, phys_addr_t pmdp, pudval_t prot)
+static inline void __pud_populate(pud_t *pudp, phys_addr_t pmdp, pmdval_t prot)
 {
 	BUILD_BUG();
 }

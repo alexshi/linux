@@ -134,16 +134,16 @@ static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
 	return native_make_pmd(v & ~clear);
 }
 
-static inline pud_t pud_set_flags(pud_t pud, pudval_t set)
+static inline pud_t pud_set_flags(pud_t pud, pmdval_t set)
 {
-	pudval_t v = native_pud_val(pud);
+	pmdval_t v = native_pud_val(pud);
 
 	return native_make_pud(v | set);
 }
 
-static inline pud_t pud_clear_flags(pud_t pud, pudval_t clear)
+static inline pud_t pud_clear_flags(pud_t pud, pmdval_t clear)
 {
-	pudval_t v = native_pud_val(pud);
+	pmdval_t v = native_pud_val(pud);
 
 	return native_make_pud(v & ~clear);
 }
@@ -594,7 +594,7 @@ pmd_t pmd_mkwrite(pmd_t pmd, struct vm_area_struct *vma);
 /* See comments above mksaveddirty_shift() */
 static inline pud_t pud_mksaveddirty(pud_t pud)
 {
-	pudval_t v = native_pud_val(pud);
+	pmdval_t v = native_pud_val(pud);
 
 	v = mksaveddirty_shift(v);
 	return native_make_pud(v);
@@ -603,7 +603,7 @@ static inline pud_t pud_mksaveddirty(pud_t pud)
 /* See comments above mksaveddirty_shift() */
 static inline pud_t pud_clear_saveddirty(pud_t pud)
 {
-	pudval_t v = native_pud_val(pud);
+	pmdval_t v = native_pud_val(pud);
 
 	v = clear_saveddirty_shift(v);
 	return native_make_pud(v);
@@ -833,7 +833,7 @@ static inline pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
 
 static inline pud_t pud_modify(pud_t pud, pgprot_t newprot)
 {
-	pudval_t val = pud_val(pud), oldval = val;
+	pmdval_t val = pud_val(pud), oldval = val;
 	pud_t pud_result;
 
 	val &= _HPAGE_CHG_MASK;

@@ -341,7 +341,7 @@ static inline pgdval_t pgd_flags(pgd_t pgd)
 #if CONFIG_PGTABLE_LEVELS > 4
 typedef struct { p4dval_t p4d; } p4d_t;
 
-static inline p4d_t native_make_p4d(pudval_t val)
+static inline p4d_t native_make_p4d(pmdval_t val)
 {
 	return (p4d_t) { val };
 }
@@ -353,7 +353,7 @@ static inline p4dval_t native_p4d_val(p4d_t p4d)
 #else
 #include <asm-generic/pgtable-nop4d.h>
 
-static inline p4d_t native_make_p4d(pudval_t val)
+static inline p4d_t native_make_p4d(pmdval_t val)
 {
 	return (p4d_t) { .pgd = native_make_pgd((pgdval_t)val) };
 }
@@ -365,26 +365,26 @@ static inline p4dval_t native_p4d_val(p4d_t p4d)
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 3
-typedef struct { pudval_t pud; } pud_t;
+typedef struct { pmdval_t pud; } pud_t;
 
 static inline pud_t native_make_pud(pmdval_t val)
 {
 	return (pud_t) { val };
 }
 
-static inline pudval_t native_pud_val(pud_t pud)
+static inline pmdval_t native_pud_val(pud_t pud)
 {
 	return pud.pud;
 }
 #else
 #include <asm-generic/pgtable-nopud.h>
 
-static inline pud_t native_make_pud(pudval_t val)
+static inline pud_t native_make_pud(pmdval_t val)
 {
 	return (pud_t) { .p4d.pgd = native_make_pgd(val) };
 }
 
-static inline pudval_t native_pud_val(pud_t pud)
+static inline pmdval_t native_pud_val(pud_t pud)
 {
 	return native_pgd_val(pud.p4d.pgd);
 }
@@ -430,7 +430,7 @@ static inline p4dval_t p4d_flags(p4d_t p4d)
 	return native_p4d_val(p4d) & p4d_flags_mask(p4d);
 }
 
-static inline pudval_t pud_pfn_mask(pud_t pud)
+static inline pmdval_t pud_pfn_mask(pud_t pud)
 {
 	if (native_pud_val(pud) & _PAGE_PSE)
 		return PHYSICAL_PUD_PAGE_MASK;
@@ -438,12 +438,12 @@ static inline pudval_t pud_pfn_mask(pud_t pud)
 		return PTE_PFN_MASK;
 }
 
-static inline pudval_t pud_flags_mask(pud_t pud)
+static inline pmdval_t pud_flags_mask(pud_t pud)
 {
 	return ~pud_pfn_mask(pud);
 }
 
-static inline pudval_t pud_flags(pud_t pud)
+static inline pmdval_t pud_flags(pud_t pud)
 {
 	return native_pud_val(pud) & pud_flags_mask(pud);
 }

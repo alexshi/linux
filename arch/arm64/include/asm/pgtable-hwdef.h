@@ -122,13 +122,13 @@
 /*
  * Level 1 descriptor (PUD).
  */
-#define PUD_TYPE_TABLE		(_AT(pudval_t, 3) << 0)
-#define PUD_TYPE_MASK		(_AT(pudval_t, 3) << 0)
-#define PUD_TYPE_SECT		(_AT(pudval_t, 1) << 0)
-#define PUD_SECT_RDONLY		(_AT(pudval_t, 1) << 7)		/* AP[2] */
-#define PUD_TABLE_AF		(_AT(pudval_t, 1) << 10)	/* Ignored if no FEAT_HAFT */
-#define PUD_TABLE_PXN		(_AT(pudval_t, 1) << 59)
-#define PUD_TABLE_UXN		(_AT(pudval_t, 1) << 60)
+#define PUD_TYPE_TABLE		(_AT(pmdval_t, 3) << 0)
+#define PUD_TYPE_MASK		(_AT(pmdval_t, 3) << 0)
+#define PUD_TYPE_SECT		(_AT(pmdval_t, 1) << 0)
+#define PUD_SECT_RDONLY		(_AT(pmdval_t, 1) << 7)		/* AP[2] */
+#define PUD_TABLE_AF		(_AT(pmdval_t, 1) << 10)	/* Ignored if no FEAT_HAFT */
+#define PUD_TABLE_PXN		(_AT(pmdval_t, 1) << 59)
+#define PUD_TABLE_UXN		(_AT(pmdval_t, 1) << 60)
 
 /*
  * Level 2 descriptor (PMD).

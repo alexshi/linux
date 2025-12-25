@@ -94,7 +94,7 @@ unsigned long __init __startup_64(unsigned long p2v_offset,
 	unsigned long load_delta;
 	pgdval_t *pgd;
 	p4dval_t *p4d;
-	pudval_t *pud;
+	pmdval_t *pud;
 	pmdval_t *pmd, pmd_entry;
 	bool la57;
 	int i;
@@ -169,8 +169,8 @@ unsigned long __init __startup_64(unsigned long p2v_offset,
 	}
 
 	i = physaddr >> PUD_SHIFT;
-	pud[(i + 0) % PTRS_PER_PUD] = (pudval_t)pmd + pgtable_flags;
-	pud[(i + 1) % PTRS_PER_PUD] = (pudval_t)pmd + pgtable_flags;
+	pud[(i + 0) % PTRS_PER_PUD] = (pmdval_t)pmd + pgtable_flags;
+	pud[(i + 1) % PTRS_PER_PUD] = (pmdval_t)pmd + pgtable_flags;
 
 	pmd_entry = __PAGE_KERNEL_LARGE_EXEC & ~_PAGE_GLOBAL;
 	pmd_entry += sme_get_me_mask();
