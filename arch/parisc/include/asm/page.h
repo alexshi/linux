@@ -39,10 +39,10 @@ typedef struct { __u32 pgd; } pgd_t;
 typedef struct { unsigned long pgprot; } pgprot_t;
 
 #if CONFIG_PGTABLE_LEVELS == 3
-typedef struct { __u32 pmd; } pmd_t;
+typedef struct { __u32 entry; } pmd_t;
 #define __pmd(x)	((pmd_t) { (x) } )
 /* pXd_val() do not work as lvalues, so make sure we don't use them as such. */
-#define pmd_val(x)	((x).pmd + 0)
+#define pmd_val(x)	((x).entry + 0)
 #endif
 
 #define pte_val(x)	((x).pte)

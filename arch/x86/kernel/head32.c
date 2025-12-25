@@ -95,7 +95,7 @@ asmlinkage __visible void __init __noreturn i386_start_kernel(void)
 #ifdef CONFIG_X86_PAE
 typedef pmd_t			pl2_t;
 #define pl2_base		initial_pg_pmd
-#define SET_PL2(val)		{ .pmd = (val), }
+#define SET_PL2(val)		{ .entry = (val), }
 #else
 typedef pgd_t			pl2_t;
 #define pl2_base		initial_page_table

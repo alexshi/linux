@@ -253,8 +253,8 @@ static void sanity_check_ldt_mapping(struct mm_struct *mm)
 
 	k_pmd      = pgd_to_pmd_walk(k_pgd, LDT_BASE_ADDR);
 	u_pmd      = pgd_to_pmd_walk(u_pgd, LDT_BASE_ADDR);
-	had_kernel = (k_pmd->pmd != 0);
-	had_user   = (u_pmd->pmd != 0);
+	had_kernel = (k_pmd->entry != 0);
+	had_user   = (u_pmd->entry != 0);
 
 	do_sanity_check(mm, had_kernel, had_user);
 }

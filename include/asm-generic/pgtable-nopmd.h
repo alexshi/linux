@@ -15,7 +15,7 @@ struct mm_struct;
  * us to conceptually access the pud entry that this pmd is folded into
  * without casting.
  */
-typedef struct { pud_t pud; } pmd_t;
+typedef struct { pud_t entry; } pmd_t;
 
 #define PMD_SHIFT	PUD_SHIFT
 #define PTRS_PER_PMD	1
@@ -33,7 +33,7 @@ static inline int pud_present(pud_t pud)	{ return 1; }
 static inline int pud_user(pud_t pud)		{ return 0; }
 static inline int pud_leaf(pud_t pud)		{ return 0; }
 static inline void pud_clear(pud_t *pud)	{ }
-#define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
+#define pmd_ERROR(pmd)				(pud_ERROR((pmd).entry))
 
 #define pud_populate(mm, pmd, pte)		do { } while (0)
 
@@ -49,11 +49,11 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 }
 #define pmd_offset pmd_offset
 
-#define pmd_val(x)				(pud_val((x).pud))
+#define pmd_val(x)				(pud_val((x).entry))
 #define __pmd(x)				((pmd_t) { __pud(x) } )
 
 #define pud_page(pud)				(pmd_page((pmd_t){ pud }))
-#define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
+#define pud_pgtable(entry)			((pmd_t *)(pmd_page_vaddr((pmd_t){ entry})))
 
 /*
  * allocating and freeing a pmd is trivial: the 1-entry pmd is

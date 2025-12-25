@@ -34,14 +34,14 @@ typedef struct { unsigned long pgd; } pgd_t;
 
 #if CONFIG_PGTABLE_LEVELS > 2
 
-typedef struct { unsigned long pmd; } pmd_t;
-#define pmd_val(x)	((x).pmd)
+typedef struct { unsigned long entry; } pmd_t;
+#define pmd_val(x)	((x).entry)
 #define __pmd(x) ((pmd_t) { (x) } )
 
 #if CONFIG_PGTABLE_LEVELS > 3
 
-typedef struct { unsigned long pud; } pud_t;
-#define pud_val(x)	((x).pud)
+typedef struct { unsigned long entry; } pud_t;
+#define pud_val(x)	((x).entry)
 #define __pud(x) ((pud_t) { (x) } )
 
 #endif /* CONFIG_PGTABLE_LEVELS > 3 */

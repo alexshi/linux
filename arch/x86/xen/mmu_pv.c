@@ -446,7 +446,7 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_make_pgd);
 
 __visible pmdval_t xen_pmd_val(pmd_t pmd)
 {
-	return pte_mfn_to_pfn(pmd.pmd);
+	return pte_mfn_to_pfn(pmd.entry);
 }
 PV_CALLEE_SAVE_REGS_THUNK(xen_pmd_val);
 
@@ -491,7 +491,7 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_make_pmd);
 
 __visible pmdval_t xen_pud_val(pud_t pud)
 {
-	return pte_mfn_to_pfn(pud.pud);
+	return pte_mfn_to_pfn(pud.entry);
 }
 PV_CALLEE_SAVE_REGS_THUNK(xen_pud_val);
 
@@ -580,7 +580,7 @@ static void xen_set_p4d(p4d_t *ptr, p4d_t val)
 
 __visible pmdval_t xen_p4d_val(p4d_t p4d)
 {
-	return pte_mfn_to_pfn(p4d.p4d);
+	return pte_mfn_to_pfn(p4d.entry);
 }
 PV_CALLEE_SAVE_REGS_THUNK(xen_p4d_val);
 

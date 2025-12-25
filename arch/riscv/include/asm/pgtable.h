@@ -1086,7 +1086,7 @@ static inline pud_t pudp_huge_get_and_clear(struct mm_struct *mm,
 					    unsigned long address,  pud_t *pudp)
 {
 #ifdef CONFIG_SMP
-	pud_t pud = __pud(xchg(&pudp->pud, 0));
+	pud_t pud = __pud(xchg(&pudp->entry, 0));
 #else
 	pud_t pud = *pudp;
 

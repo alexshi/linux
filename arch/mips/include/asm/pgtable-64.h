@@ -172,8 +172,8 @@ extern pte_t invalid_pte_table[PTRS_PER_PTE];
  * definitions are below, for 2-level the
  * definitions are supplied by <asm-generic/pgtable-nopmd.h>.
  */
-typedef struct { unsigned long pud; } pud_t;
-#define pud_val(x)	((x).pud)
+typedef struct { unsigned long entry; } pud_t;
+#define pud_val(x)	((x).entry)
 #define __pud(x)	((pud_t) { (x) })
 
 extern pud_t invalid_pud_table[PTRS_PER_PUD];
@@ -226,8 +226,8 @@ static inline void set_p4d(p4d_t *p4d, p4d_t p4dval)
  * For 3-level pagetables we defines these ourselves, for 2-level the
  * definitions are supplied by <asm-generic/pgtable-nopmd.h>.
  */
-typedef struct { unsigned long pmd; } pmd_t;
-#define pmd_val(x)	((x).pmd)
+typedef struct { unsigned long entry; } pmd_t;
+#define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) } )
 
 

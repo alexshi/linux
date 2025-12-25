@@ -43,28 +43,28 @@ extern bool pgtable_l5_enabled;
 
 /* Page 4th Directory entry */
 typedef struct {
-	unsigned long p4d;
+	unsigned long entry;
 } p4d_t;
 
-#define p4d_val(x)	((x).p4d)
+#define p4d_val(x)	((x).entry)
 #define __p4d(x)	((p4d_t) { (x) })
 #define PTRS_PER_P4D	(PAGE_SIZE / sizeof(p4d_t))
 
 /* Page Upper Directory entry */
 typedef struct {
-	unsigned long pud;
+	unsigned long entry;
 } pud_t;
 
-#define pud_val(x)      ((x).pud)
+#define pud_val(x)      ((x).entry)
 #define __pud(x)        ((pud_t) { (x) })
 #define PTRS_PER_PUD    (PAGE_SIZE / sizeof(pud_t))
 
 /* Page Middle Directory entry */
 typedef struct {
-	unsigned long pmd;
+	unsigned long entry;
 } pmd_t;
 
-#define pmd_val(x)      ((x).pmd)
+#define pmd_val(x)      ((x).entry)
 #define __pmd(x)        ((pmd_t) { (x) })
 
 #define PTRS_PER_PMD    (PAGE_SIZE / sizeof(pmd_t))

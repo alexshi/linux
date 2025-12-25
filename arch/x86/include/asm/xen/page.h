@@ -331,18 +331,18 @@ static inline pte_t __pte_ma(pteval_t x)
 	return (pte_t) { .pte = x };
 }
 
-#define pmd_val_ma(v) ((v).pmd)
+#define pmd_val_ma(v) ((v).entry)
 #ifdef __PAGETABLE_PUD_FOLDED
-#define pud_val_ma(v) ((v).p4d.pgd.pgd)
+#define pud_val_ma(v) ((v).entry.pgd.pgd)
 #else
-#define pud_val_ma(v) ((v).pud)
+#define pud_val_ma(v) ((v).entry)
 #endif
 #define __pmd_ma(x)	((pmd_t) { (x) } )
 
 #ifdef __PAGETABLE_P4D_FOLDED
 #define p4d_val_ma(x)	((x).pgd.pgd)
 #else
-#define p4d_val_ma(x)	((x).p4d)
+#define p4d_val_ma(x)	((x).entry)
 #endif
 
 xmaddr_t arbitrary_virt_to_machine(void *address);

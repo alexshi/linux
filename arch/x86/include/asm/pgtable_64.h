@@ -102,7 +102,7 @@ static inline pte_t native_ptep_get_and_clear(pte_t *xp)
 static inline pmd_t native_pmdp_get_and_clear(pmd_t *xp)
 {
 #ifdef CONFIG_SMP
-	return native_make_pmd(xchg(&xp->pmd, 0));
+	return native_make_pmd(xchg(&xp->entry, 0));
 #else
 	/* native_local_pmdp_get_and_clear,
 	   but duplicated because of cyclic dependency */
@@ -125,7 +125,7 @@ static inline void native_pud_clear(pud_t *pud)
 static inline pud_t native_pudp_get_and_clear(pud_t *xp)
 {
 #ifdef CONFIG_SMP
-	return native_make_pud(xchg(&xp->pud, 0));
+	return native_make_pud(xchg(&xp->entry, 0));
 #else
 	/* native_local_pudp_get_and_clear,
 	 * but duplicated because of cyclic dependency

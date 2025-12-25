@@ -22,12 +22,12 @@ typedef u64 pgdval_t;
  * These are used to make use of C type-checking..
  */
 typedef struct { pteval_t pte; } pte_t;
-typedef struct { pmdval_t pmd; } pmd_t;
+typedef struct { pmdval_t entry; } pmd_t;
 typedef struct { pgdval_t pgd; } pgd_t;
 typedef struct { pteval_t pgprot; } pgprot_t;
 
 #define pte_val(x)      ((x).pte)
-#define pmd_val(x)      ((x).pmd)
+#define pmd_val(x)      ((x).entry)
 #define pgd_val(x)	((x).pgd)
 #define pgprot_val(x)   ((x).pgprot)
 

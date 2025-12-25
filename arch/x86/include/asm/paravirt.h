@@ -426,7 +426,7 @@ static inline pmd_t __pmd(pmdval_t val)
 
 static inline pmdval_t pmd_val(pmd_t pmd)
 {
-	return PVOP_ALT_CALLEE1(pmdval_t, mmu.pmd_val, pmd.pmd,
+	return PVOP_ALT_CALLEE1(pmdval_t, mmu.pmd_val, pmd.entry,
 				"mov %%rdi, %%rax", ALT_NOT_XEN);
 }
 
@@ -447,7 +447,7 @@ static inline pud_t __pud(pmdval_t val)
 
 static inline pmdval_t pud_val(pud_t pud)
 {
-	return PVOP_ALT_CALLEE1(pmdval_t, mmu.pud_val, pud.pud,
+	return PVOP_ALT_CALLEE1(pmdval_t, mmu.pud_val, pud.entry,
 				"mov %%rdi, %%rax", ALT_NOT_XEN);
 }
 
@@ -473,7 +473,7 @@ static inline p4d_t __p4d(pmdval_t val)
 
 static inline pmdval_t p4d_val(p4d_t p4d)
 {
-	return PVOP_ALT_CALLEE1(pmdval_t, mmu.p4d_val, p4d.p4d,
+	return PVOP_ALT_CALLEE1(pmdval_t, mmu.p4d_val, p4d.entry,
 				"mov %%rdi, %%rax", ALT_NOT_XEN);
 }
 

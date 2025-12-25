@@ -31,20 +31,20 @@ typedef struct { pteval_t pte; } pte_t;
 #define __pte(x)	((pte_t) { (x) } )
 
 #if CONFIG_PGTABLE_LEVELS > 2
-typedef struct { pmdval_t pmd; } pmd_t;
-#define pmd_val(x)	((x).pmd)
+typedef struct { pmdval_t entry; } pmd_t;
+#define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) } )
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 3
-typedef struct { pmdval_t pud; } pud_t;
-#define pud_val(x)	((x).pud)
+typedef struct { pmdval_t entry; } pud_t;
+#define pud_val(x)	((x).entry)
 #define __pud(x)	((pud_t) { (x) } )
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 4
-typedef struct { pmdval_t p4d; } p4d_t;
-#define p4d_val(x)	((x).p4d)
+typedef struct { pmdval_t entry; } p4d_t;
+#define p4d_val(x)	((x).entry)
 #define __p4d(x)	((p4d_t) { (x) } )
 #endif
 

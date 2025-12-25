@@ -133,11 +133,11 @@ unsigned long __init __startup_64(unsigned long p2v_offset,
 		pgd[pgd_index(__START_KERNEL_map)] = (pgdval_t)p4d | _PAGE_TABLE;
 	}
 
-	level3_kernel_pgt[PTRS_PER_PUD - 2].pud += load_delta;
-	level3_kernel_pgt[PTRS_PER_PUD - 1].pud += load_delta;
+	level3_kernel_pgt[PTRS_PER_PUD - 2].entry += load_delta;
+	level3_kernel_pgt[PTRS_PER_PUD - 1].entry += load_delta;
 
 	for (i = FIXMAP_PMD_TOP; i > FIXMAP_PMD_TOP - FIXMAP_PMD_NUM; i--)
-		level2_fixmap_pgt[i].pmd += load_delta;
+		level2_fixmap_pgt[i].entry += load_delta;
 
 	/*
 	 * Set up the identity mapping for the switchover.  These
@@ -146,14 +146,14 @@ unsigned long __init __startup_64(unsigned long p2v_offset,
 	 * it avoids problems around wraparound.
 	 */
 
-	pud = &early_pgts[0]->pmd;
-	pmd = &early_pgts[1]->pmd;
+	pud = &early_pgts[0]->entry;
+	pmd = &early_pgts[1]->entry;
 	next_early_pgt = 2;
 
 	pgtable_flags = _KERNPG_TABLE_NOENC + sme_get_me_mask();
 
 	if (la57) {
-		p4d = &early_pgts[next_early_pgt++]->pmd;
+		p4d = &early_pgts[next_early_pgt++]->entry;
 
 		i = (physaddr >> PGDIR_SHIFT) % PTRS_PER_PGD;
 		pgd[i + 0] = (pgdval_t)p4d + pgtable_flags;

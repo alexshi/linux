@@ -339,7 +339,7 @@ static inline pgdval_t pgd_flags(pgd_t pgd)
 }
 
 #if CONFIG_PGTABLE_LEVELS > 4
-typedef struct { pmdval_t p4d; } p4d_t;
+typedef struct { pmdval_t entry; } p4d_t;
 
 static inline p4d_t native_make_p4d(pmdval_t val)
 {
@@ -348,7 +348,7 @@ static inline p4d_t native_make_p4d(pmdval_t val)
 
 static inline pmdval_t native_p4d_val(p4d_t p4d)
 {
-	return p4d.p4d;
+	return p4d.entry;
 }
 #else
 #include <asm-generic/pgtable-nop4d.h>
@@ -365,7 +365,7 @@ static inline pmdval_t native_p4d_val(p4d_t p4d)
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 3
-typedef struct { pmdval_t pud; } pud_t;
+typedef struct { pmdval_t entry; } pud_t;
 
 static inline pud_t native_make_pud(pmdval_t val)
 {
@@ -374,43 +374,43 @@ static inline pud_t native_make_pud(pmdval_t val)
 
 static inline pmdval_t native_pud_val(pud_t pud)
 {
-	return pud.pud;
+	return pud.entry;
 }
 #else
 #include <asm-generic/pgtable-nopud.h>
 
 static inline pud_t native_make_pud(pmdval_t val)
 {
-	return (pud_t) { .p4d.pgd = native_make_pgd(val) };
+	return (pud_t) { .entry.pgd = native_make_pgd(val) };
 }
 
 static inline pmdval_t native_pud_val(pud_t pud)
 {
-	return native_pgd_val(pud.p4d.pgd);
+	return native_pgd_val(pud.entry.pgd);
 }
 #endif
 
 #if CONFIG_PGTABLE_LEVELS > 2
 static inline pmd_t native_make_pmd(pmdval_t val)
 {
-	return (pmd_t) { .pmd = val };
+	return (pmd_t) { .entry = val };
 }
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
-	return pmd.pmd;
+	return pmd.entry;
 }
 #else
 #include <asm-generic/pgtable-nopmd.h>
 
 static inline pmd_t native_make_pmd(pmdval_t val)
 {
-	return (pmd_t) { .pud.p4d.pgd = native_make_pgd(val) };
+	return (pmd_t) { .entry.entry.pgd = native_make_pgd(val) };
 }
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
-	return native_pgd_val(pmd.pud.p4d.pgd);
+	return native_pgd_val(pmd.entry.entry.pgd);
 }
 #endif
 

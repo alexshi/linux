@@ -13,7 +13,7 @@
  * us to conceptually access the p4d entry that this pud is folded into
  * without casting.
  */
-typedef struct { p4d_t p4d; } pud_t;
+typedef struct { p4d_t entry; } pud_t;
 
 #define PUD_SHIFT	P4D_SHIFT
 #define PTRS_PER_PUD	1
@@ -29,7 +29,7 @@ static inline int p4d_none(p4d_t p4d)		{ return 0; }
 static inline int p4d_bad(p4d_t p4d)		{ return 0; }
 static inline int p4d_present(p4d_t p4d)	{ return 1; }
 static inline void p4d_clear(p4d_t *p4d)	{ }
-#define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
+#define pud_ERROR(pud)				(p4d_ERROR((pud).entry))
 
 #define p4d_populate(mm, p4d, pud)		do { } while (0)
 #define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
@@ -45,7 +45,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 }
 #define pud_offset pud_offset
 
-#define pud_val(x)				(p4d_val((x).p4d))
+#define pud_val(x)				(p4d_val((x).entry))
 #define __pud(x)				((pud_t) { __p4d(x) })
 
 #define p4d_page(p4d)				(pud_page((pud_t){ p4d }))

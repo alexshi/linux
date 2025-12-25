@@ -32,19 +32,19 @@ static inline pte_basic_t pte_val(pte_t x)
 
 /* PMD level */
 #ifdef CONFIG_PPC64
-typedef struct { unsigned long pmd; } pmd_t;
+typedef struct { unsigned long entry; } pmd_t;
 #define __pmd(x)	((pmd_t) { (x) })
 static inline unsigned long pmd_val(pmd_t x)
 {
-	return x.pmd;
+	return x.entry;
 }
 
 /* 64 bit always use 4 level table. */
-typedef struct { unsigned long pud; } pud_t;
+typedef struct { unsigned long entry; } pud_t;
 #define __pud(x)	((pud_t) { (x) })
 static inline unsigned long pud_val(pud_t x)
 {
-	return x.pud;
+	return x.entry;
 }
 #endif /* CONFIG_PPC64 */
 

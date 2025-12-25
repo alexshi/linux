@@ -44,10 +44,10 @@ typedef struct {
 #if CONFIG_PGTABLE_LEVELS > 3
 
 typedef struct {
-	unsigned long pud;
+	unsigned long entry;
 } pud_t;
 
-#define pud_val(x)      	((x).pud)
+#define pud_val(x)      	((x).entry)
 #define __pud(x)        	((pud_t) { (x) })
 
 #endif
@@ -55,10 +55,10 @@ typedef struct {
 #if CONFIG_PGTABLE_LEVELS > 2
 
 typedef struct {
-	unsigned long pmd;
+	unsigned long entry;
 } pmd_t;
 
-#define pmd_val(x)	((x).pmd)
+#define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) })
 
 #endif

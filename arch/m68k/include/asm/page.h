@@ -16,8 +16,8 @@
  * These are used to make use of C type-checking..
  */
 #if !defined(CONFIG_MMU) || CONFIG_PGTABLE_LEVELS == 3
-typedef struct { unsigned long pmd; } pmd_t;
-#define pmd_val(x)	((&x)->pmd)
+typedef struct { unsigned long entry; } pmd_t;
+#define pmd_val(x)	((&x)->entry)
 #define __pmd(x)	((pmd_t) { (x) } )
 #endif
 

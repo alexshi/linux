@@ -35,8 +35,8 @@ typedef union {
 	};
 	unsigned long long pmd;
 } pmd_t;
-#define pmd_val(x)	((x).pmd)
-#define __pmd(x)	((pmd_t) { .pmd = (x) } )
+#define pmd_val(x)	((x).entry)
+#define __pmd(x)	((pmd_t) { .entry = (x) } )
 
 static inline pmd_t *pud_pgtable(pud_t pud)
 {

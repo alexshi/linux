@@ -229,7 +229,7 @@ static void hv_crash_fixup_kernpt(void)
 
 	/* trampoline_pa is below 4G, so no pre-existing entry to clobber */
 	p4d_populate(&init_mm, p4d, (pud_t *)hv_crash_ptpgs[1]);
-	p4d->p4d = p4d->p4d & ~(_PAGE_NX);    /* enable execute */
+	p4d->entry = p4d->entry & ~(_PAGE_NX);    /* enable execute */
 }
 
 /*
@@ -512,7 +512,7 @@ static void hv_crash_build_tramp_pt(void)
 	p4d = hv_crash_ptpgs[0] + pgd_index(addr) * sizeof(p4d);
 	pa = virt_to_phys(hv_crash_ptpgs[1]);
 	set_p4d(p4d, __p4d(_PAGE_TABLE | pa));
-	p4d->p4d &= ~(_PAGE_NX);	/* enable execute */
+	p4d->entry &= ~(_PAGE_NX);	/* enable execute */
 
 	pud = hv_crash_ptpgs[1] + pud_index(addr) * sizeof(pud);
 	pa = virt_to_phys(hv_crash_ptpgs[2]);

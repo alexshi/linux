@@ -53,7 +53,7 @@ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 static inline void native_set_pud(pud_t *pudp, pud_t pud)
 {
 #ifdef CONFIG_MITIGATION_PAGE_TABLE_ISOLATION
-	pud.p4d.pgd = pti_set_user_pgtbl(&pudp->p4d.pgd, pud.p4d.pgd);
+	pud.entry.pgd = pti_set_user_pgtbl(&pudp->entry.pgd, pud.entry.pgd);
 #endif
 	pxx_xchg64(pud, pudp, native_pud_val(pud));
 }
@@ -141,7 +141,7 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
 		return old;
 	}
 
-	return pxx_xchg64(pmd, pmdp, pmd.pmd);
+	return pxx_xchg64(pmd, pmdp, pmd.entry);
 }
 #endif
 

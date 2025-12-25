@@ -20,31 +20,31 @@ static inline __be64 pte_raw(pte_t x)
 
 /* PMD level */
 #ifdef CONFIG_PPC64
-typedef struct { __be64 pmd; } pmd_t;
+typedef struct { __be64 entry; } pmd_t;
 #define __pmd(x)	((pmd_t) { cpu_to_be64(x) })
 #define __pmd_raw(x)	((pmd_t) { (x) })
 static inline unsigned long pmd_val(pmd_t x)
 {
-	return be64_to_cpu(x.pmd);
+	return be64_to_cpu(x.entry);
 }
 
 static inline __be64 pmd_raw(pmd_t x)
 {
-	return x.pmd;
+	return x.entry;
 }
 
 /* 64 bit always use 4 level table. */
-typedef struct { __be64 pud; } pud_t;
+typedef struct { __be64 entry; } pud_t;
 #define __pud(x)	((pud_t) { cpu_to_be64(x) })
 #define __pud_raw(x)	((pud_t) { (x) })
 static inline unsigned long pud_val(pud_t x)
 {
-	return be64_to_cpu(x.pud);
+	return be64_to_cpu(x.entry);
 }
 
 static inline __be64 pud_raw(pud_t x)
 {
-	return x.pud;
+	return x.entry;
 }
 
 #endif /* CONFIG_PPC64 */

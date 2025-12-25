@@ -52,7 +52,7 @@ extern struct sparc_phys_banks sp_banks[SPARC_PHYS_BANKS+1];
  */
 typedef struct { unsigned long pte; } pte_t;
 typedef struct { unsigned long iopte; } iopte_t;
-typedef struct { unsigned long pmd; } pmd_t;
+typedef struct { unsigned long entry; } pmd_t;
 typedef struct { unsigned long pgd; } pgd_t;
 typedef struct { unsigned long ctxd; } ctxd_t;
 typedef struct { unsigned long pgprot; } pgprot_t;
@@ -60,7 +60,7 @@ typedef struct { unsigned long iopgprot; } iopgprot_t;
 
 #define pte_val(x)	((x).pte)
 #define iopte_val(x)	((x).iopte)
-#define pmd_val(x)      ((x).pmd)
+#define pmd_val(x)      ((x).entry)
 #define pgd_val(x)	((x).pgd)
 #define ctxd_val(x)	((x).ctxd)
 #define pgprot_val(x)	((x).pgprot)

@@ -65,15 +65,15 @@ void copy_highpage(struct page *to, struct page *from);
 /* These are used to make use of C type-checking.. */
 typedef struct { unsigned long pte; } pte_t;
 typedef struct { unsigned long iopte; } iopte_t;
-typedef struct { unsigned long pmd; } pmd_t;
-typedef struct { unsigned long pud; } pud_t;
+typedef struct { unsigned long entry; } pmd_t;
+typedef struct { unsigned long entry; } pud_t;
 typedef struct { unsigned long pgd; } pgd_t;
 typedef struct { unsigned long pgprot; } pgprot_t;
 
 #define pte_val(x)	((x).pte)
 #define iopte_val(x)	((x).iopte)
-#define pmd_val(x)      ((x).pmd)
-#define pud_val(x)      ((x).pud)
+#define pmd_val(x)      ((x).entry)
+#define pud_val(x)      ((x).entry)
 #define pgd_val(x)	((x).pgd)
 #define pgprot_val(x)	((x).pgprot)
 

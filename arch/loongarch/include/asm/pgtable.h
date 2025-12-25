@@ -141,8 +141,8 @@ extern pte_t invalid_pte_table[PTRS_PER_PTE];
 
 #ifndef __PAGETABLE_PUD_FOLDED
 
-typedef struct { unsigned long pud; } pud_t;
-#define pud_val(x)	((x).pud)
+typedef struct { unsigned long entry; } pud_t;
+#define pud_val(x)	((x).entry)
 #define __pud(x)	((pud_t) { (x) })
 
 extern pud_t invalid_pud_table[PTRS_PER_PUD];
@@ -187,8 +187,8 @@ static inline void p4d_clear(p4d_t *p4dp)
 
 #ifndef __PAGETABLE_PMD_FOLDED
 
-typedef struct { unsigned long pmd; } pmd_t;
-#define pmd_val(x)	((x).pmd)
+typedef struct { unsigned long entry; } pmd_t;
+#define pmd_val(x)	((x).entry)
 #define __pmd(x)	((pmd_t) { (x) })
 
 extern pmd_t invalid_pmd_table[PTRS_PER_PMD];
