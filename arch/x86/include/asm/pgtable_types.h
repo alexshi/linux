@@ -340,79 +340,57 @@ static inline pgdval_t pgd_flags(pgd_t pgd)
 
 #if CONFIG_PGTABLE_LEVELS > 4
 typedef pmld_t p4d_t;
-
-static inline p4d_t native_make_p4d(pmdval_t val)
-{
-	return (p4d_t) { val };
-}
-
-static inline pmdval_t native_p4d_val(p4d_t p4d)
-{
-	return p4d.entry;
-}
 #else
 #include <asm-generic/pgtable-nop4d.h>
+#endif
+
+_Static_assert(sizeof(p4d_t) == sizeof(pmdval_t), "p4d_t size mismatch!");
 
 static inline p4d_t native_make_p4d(pmdval_t val)
 {
-	return (p4d_t) { .pgd = native_make_pgd((pgdval_t)val) };
+	return *(p4d_t *)&val;
 }
 
 static inline pmdval_t native_p4d_val(p4d_t p4d)
 {
-	return native_pgd_val(p4d.pgd);
+	return *(pmdval_t *)&p4d;
 }
-#endif
 
 #if CONFIG_PGTABLE_LEVELS > 3
 typedef pmld_t pud_t;
-
-static inline pud_t native_make_pud(pmdval_t val)
-{
-	return (pud_t) { val };
-}
-
-static inline pmdval_t native_pud_val(pud_t pud)
-{
-	return pud.entry;
-}
 #else
 #include <asm-generic/pgtable-nopud.h>
+#endif
+
+_Static_assert(sizeof(pud_t) == sizeof(pmdval_t), "pud_t size mismatch!");
 
 static inline pud_t native_make_pud(pmdval_t val)
 {
-	return (pud_t) { .entry.pgd = native_make_pgd(val) };
+	return *(pud_t *)&val;
 }
 
 static inline pmdval_t native_pud_val(pud_t pud)
 {
-	return native_pgd_val(pud.entry.pgd);
+	return *(pmdval_t *)&pud;
 }
-#endif
 
 #if CONFIG_PGTABLE_LEVELS > 2
-static inline pmd_t native_make_pmd(pmdval_t val)
-{
-	return (pmd_t) { .entry = val };
-}
-
-static inline pmdval_t native_pmd_val(pmd_t pmd)
-{
-	return pmd.entry;
-}
 #else
 #include <asm-generic/pgtable-nopmd.h>
+#endif
+
+_Static_assert(sizeof(pmd_t) == sizeof(pmdval_t), "pmd_t size mismatch!");
 
 static inline pmd_t native_make_pmd(pmdval_t val)
 {
-	return (pmd_t) { .entry.entry.pgd = native_make_pgd(val) };
+	return *(pmd_t *)&val;
 }
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
-	return native_pgd_val(pmd.entry.entry.pgd);
+	return *(pmdval_t *)&pmd;
 }
-#endif
+
 
 static inline pmdval_t p4d_pfn_mask(p4d_t p4d)
 {
