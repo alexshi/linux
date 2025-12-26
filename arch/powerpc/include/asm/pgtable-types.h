@@ -41,7 +41,7 @@ static inline unsigned long pmd_val(pmd_t x)
 }
 
 /* 64 bit always use 4 level table. */
-typedef struct { unsigned long entry; } pud_t;
+typedef pmld_t pud_t;
 #define __pud(x)	((pud_t) { (x) })
 static inline unsigned long pud_val(pud_t x)
 {

@@ -82,7 +82,7 @@ typedef struct { unsigned long pgste; } pgste_t;
 typedef struct { unsigned long pte; } pte_t;
 typedef struct { unsigned long entry; } pmld_t;
 typedef pmld_t pmd_t;
-typedef struct { unsigned long entry; } pud_t;
+typedef pmld_t pud_t;
 typedef struct { unsigned long entry; } p4d_t;
 typedef struct { unsigned long pgd; } pgd_t;
 

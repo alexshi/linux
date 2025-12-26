@@ -141,7 +141,7 @@ extern pte_t invalid_pte_table[PTRS_PER_PTE];
 
 #ifndef __PAGETABLE_PUD_FOLDED
 
-typedef struct { unsigned long entry; } pud_t;
+typedef pmld_t pud_t;
 #define pud_val(x)	((x).entry)
 #define __pud(x)	((pud_t) { (x) })
 

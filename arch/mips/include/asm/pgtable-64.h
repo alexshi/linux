@@ -172,7 +172,7 @@ extern pte_t invalid_pte_table[PTRS_PER_PTE];
  * definitions are below, for 2-level the
  * definitions are supplied by <asm-generic/pgtable-nopmd.h>.
  */
-typedef struct { unsigned long entry; } pud_t;
+typedef pmld_t pud_t;
 #define pud_val(x)	((x).entry)
 #define __pud(x)	((pud_t) { (x) })
 

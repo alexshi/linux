@@ -41,7 +41,7 @@ typedef pmld_t pmd_t;
 
 #if CONFIG_PGTABLE_LEVELS > 3
 
-typedef struct { unsigned long entry; } pud_t;
+typedef pmld_t pud_t;
 #define pud_val(x)	((x).entry)
 #define __pud(x) ((pud_t) { (x) } )
 
