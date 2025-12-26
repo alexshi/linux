@@ -246,13 +246,11 @@ static inline p4d_t *__p4d_alloc_one_noprof(struct mm_struct *mm, unsigned long 
 }
 #define __p4d_alloc_one(...)	alloc_hooks(__p4d_alloc_one_noprof(__VA_ARGS__))
 
-#ifndef __HAVE_ARCH_P4D_ALLOC_ONE
 static inline p4d_t *p4d_alloc_one_noprof(struct mm_struct *mm, unsigned long addr)
 {
 	return __p4d_alloc_one_noprof(mm, addr);
 }
 #define p4d_alloc_one(...)	alloc_hooks(p4d_alloc_one_noprof(__VA_ARGS__))
-#endif
 
 static inline void __p4d_free(struct mm_struct *mm, p4d_t *p4d)
 {
@@ -262,13 +260,11 @@ static inline void __p4d_free(struct mm_struct *mm, p4d_t *p4d)
 	pagetable_dtor_free(ptdesc);
 }
 
-#ifndef __HAVE_ARCH_P4D_FREE
 static inline void p4d_free(struct mm_struct *mm, p4d_t *p4d)
 {
 	if (!mm_p4d_folded(mm))
 		__p4d_free(mm, p4d);
 }
-#endif
 
 #endif /* CONFIG_PGTABLE_LEVELS > 4 */
 
